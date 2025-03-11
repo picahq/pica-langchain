@@ -22,7 +22,7 @@ The `PicaClientOptions` class allows you to configure the Pica client with the f
 | `connectors` | `List[str]` | Optional list of connector keys to give the LLM access to. If not provided, all available connectors will be initialized. |
 
 
-### Basic Usage
+### Quick Start
 
 ```python
 from langchain_openai import ChatOpenAI
@@ -88,46 +88,6 @@ result = agent.run("What actions are available in Gmail?")
 print(result)
 ```
 
-### Using Tools Directly
-
-```python
-from pica_langchain import PicaClient, GetAvailableActionsTool, GetActionKnowledgeTool, ExecuteTool
-import json
-
-# Initialize the Pica client
-pica_client = PicaClient(secret="your-pica-secret")
-
-# Create individual tools
-get_actions_tool = GetAvailableActionsTool(client=pica_client)
-get_knowledge_tool = GetActionKnowledgeTool(client=pica_client)
-execute_tool = ExecuteTool(client=pica_client)
-
-# Fetch available actions
-actions_result = get_actions_tool.run("gmail")
-print(actions_result)
-
-# Parse actions result to extract an action ID
-actions_data = json.loads(actions_result)
-action_id = actions_data["actions"][0]["_id"]
-
-# Retrieve action knowledge
-knowledge_result = get_knowledge_tool.run(platform="gmail", action_id=action_id)
-print(knowledge_result)
-
-# Extract action path
-knowledge_data = json.loads(knowledge_result)
-action_path = knowledge_data["action"]["path"]
-
-# Execute the action
-execute_result = execute_tool.run(
-    platform="gmail",
-    action_id=action_id,
-    action_path=action_path,
-    method="GET",
-    connection_key="gmail-1"
-)
-print(execute_result)
-```
 
 ## Development
 
