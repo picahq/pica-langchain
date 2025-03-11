@@ -12,12 +12,14 @@ pip install pica-langchain
 
 ## Usage
 
-PicaClientOptions
+### PicaClientOptions
+
+The `PicaClientOptions` class allows you to configure the Pica client with the following options:
 
 | Option | Type | Description |
 |--------|------|-------------|
-| server_url | str | Optional URL for self-hosted Pica server. Defaults to `https://api.picaos.com`. |
-| connectors | List[str] | Optional list of connector keys to give the LLM access to. If not provided, all available connectors will be initialized. |
+| `server_url` | `str` | Optional URL for self-hosted Pica server. Defaults to `https://api.picaos.com`. |
+| `connectors` | `List[str]` | Optional list of connector keys to give the LLM access to. If not provided, all available connectors will be initialized. |
 
 
 ### Basic Usage
@@ -29,13 +31,7 @@ from pica_langchain import PicaClient, create_pica_agent
 from pica_langchain.models import PicaClientOptions
 
 # Initialize the Pica client
-pica_client = PicaClient(
-    secret="your-pica-secret",
-    options=PicaClientOptions(
-        # server_url="https://my-self-hosted-server.com",
-        # connectors=["connector-key-1", "connector-key-2"]
-    )
-)
+pica_client = PicaClient(secret="your-pica-secret")
 
 # Create a LangChain agent with Pica tools
 llm = ChatOpenAI(
@@ -48,9 +44,7 @@ agent = create_pica_agent(
     client=pica_client,
     llm=llm,
     agent_type=AgentType.OPENAI_FUNCTIONS,
-
-    # Set to False to hide verbose agent logs
-    verbose=True, 
+    verbose=True,  # Set to False to hide verbose agent logs
 
     # Optional: Custom system prompt to append
     system_prompt="Always start your response with `Pica works like ✨\n`"
