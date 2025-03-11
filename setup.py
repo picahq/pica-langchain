@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pica-langchain",
-    version="1.0.1",
+    version="1.0.2",
     packages=find_packages(),
     install_requires=[
         "langchain==0.3.20",
@@ -25,7 +25,13 @@ setup(
     description="Pica LangChain SDK",
     long_description=open("README.md", "r").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/picahq/pica-langchain",
+    url="https://www.picaos.com/",
+    project_urls={
+        "Documentation": "https://docs.picaos.com/sdk/langchain",
+        "Source": "https://github.com/picahq/pica-langchain",
+        "Releases": "https://github.com/picahq/pica-langchain/releases",
+        "Issue Tracker": "https://github.com/picahq/pica-langchain/issues",
+    },
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
