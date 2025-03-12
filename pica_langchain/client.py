@@ -484,7 +484,6 @@ class PicaClient:
                     request_config["data"] = json.dumps(params.data) if params.data else None
 
             logger.debug(f"Request Config: {request_config}")
-            print(f"Request Config: {request_config}")
             
             # Log the request (with sensitive data masked)
             safe_headers = {k: v if 'secret' not in k.lower() and 'key' not in k.lower() else '********' 

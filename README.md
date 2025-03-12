@@ -12,15 +12,21 @@ pip install pica-langchain
 
 ## Usage
 
-### PicaClientOptions
-
 The `PicaClientOptions` class allows you to configure the Pica client with the following options:
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `server_url` | `str` | Optional URL for self-hosted Pica server. Defaults to `https://api.picaos.com`. |
-| `connectors` | `List[str]` | Optional list of connector keys to give the LLM access to. If not provided, all available connectors will be initialized. |
+| Option | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| server_url | str | No | https://api.picaos.com | URL for self-hosted Pica server. |
+| connectors | List[str] | No | All available connectors | List of connector keys to give the LLM access to. If not provided, all available connectors will be initialized. |
 
+The `create_pica_agent` function allows customizing the following parameters:
+
+| Option | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| verbose | bool | No | False | Whether to print verbose logs. |
+| system_prompt | str | No | None | A custom system prompt to append to the default system prompt. |
+| agent_type | AgentType | No | OPENAI_FUNCTIONS | The type of agent to create. |
+| tools | List[BaseTool] | No | None | A list of tools to use in the agent. |
 
 ### Quick Start
 
@@ -44,7 +50,6 @@ agent = create_pica_agent(
     client=pica_client,
     llm=llm,
     agent_type=AgentType.OPENAI_FUNCTIONS,
-    verbose=True,  # Set to False to hide verbose agent logs
 
     # Optional: Custom system prompt to append
     system_prompt="Always start your response with `Pica works like ✨\n`"
@@ -53,8 +58,8 @@ agent = create_pica_agent(
 # Use the agent
 result = agent.invoke({
     "input": (
-        "Star the picahq/pica repo in github. "
-        "Then, list the number of stars for the picahq/pica repo in github."
+            "Star the picahq/pica repo in github. "
+            "Then, list 5 of the repositories that I have starred in github."
     )
 })
 
@@ -132,6 +137,22 @@ pip install -e ".[dev]"
 
 ```bash
 pytest
+```
+
+### Logging
+
+The Pica LangChain SDK uses the `logging` module to log messages. The log level can be set using the `PICA_LOG_LEVEL` environment variable.
+
+The following log levels are available:
+
+- `debug`
+- `info`
+- `warning`
+- `error`
+- `critical`
+
+```bash
+export PICA_LOG_LEVEL="debug"
 ```
 
 ### Examples
