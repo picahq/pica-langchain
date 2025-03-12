@@ -34,6 +34,7 @@ def create_pica_agent(
     verbose: bool = False,
     agent_kwargs: Optional[Dict[str, Any]] = None,
     system_prompt: Optional[str] = None,
+    tools: Optional[List[BaseTool]] = None,
     **kwargs
 ):
     """
@@ -46,6 +47,7 @@ def create_pica_agent(
         verbose: Whether to enable verbose output.
         agent_kwargs: Additional arguments for the agent.
         system_prompt: Optional custom system prompt to prepend to the Pica system prompt.
+        tools: Optional list of additional tools to include alongside the Pica tools.
         **kwargs: Additional arguments for initialize_agent.
         
     Returns:
@@ -53,7 +55,13 @@ def create_pica_agent(
     """
     import asyncio
     
-    tools = create_pica_tools(client)
+    # Create default Pica tools
+    pica_tools = create_pica_tools(client)
+    
+    # Combine default tools with any user-provided tools
+    all_tools = pica_tools
+    if tools:
+        all_tools = pica_tools + tools
     
     # Generate system prompt with Pica information
     if system_prompt:
@@ -73,7 +81,7 @@ def create_pica_agent(
     
     # Create and return the agent
     return initialize_agent(
-        tools,
+        all_tools,
         llm,
         agent=agent_type,
         verbose=verbose,

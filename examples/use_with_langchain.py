@@ -42,7 +42,6 @@ def main():
             client=pica_client,
             llm=llm,
             agent_type=AgentType.OPENAI_FUNCTIONS,
-            verbose=True, # Set to False to hide verbose agent logs
             system_prompt="Always start your response with `Pica works like ✨\n`" # Optional: Custom system prompt to append
         )
 
@@ -50,7 +49,7 @@ def main():
         result = agent.invoke({
             "input": (
                 "Star the picahq/pica repo in github. "
-                "Then, list the number of stars for the picahq/pica repo in github."
+                "Then, list 5 of the repositories that I have starred in github."
             )
         })
         
