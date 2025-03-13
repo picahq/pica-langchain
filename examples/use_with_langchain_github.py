@@ -1,5 +1,6 @@
 """
-Example demonstrating how to use pica-langchain with LangChain.
+Example demonstrating how to use pica-langchain with LangChain 
+to execute a multi-step workflow using the GitHub Connector.
 """
 
 import os
@@ -8,7 +9,6 @@ import sys
 from langchain_openai import ChatOpenAI
 from langchain.agents import AgentType
 from pica_langchain import PicaClient, create_pica_agent
-from pica_langchain.models import PicaClientOptions
 
 
 def get_env_var(name: str) -> str:
@@ -24,15 +24,7 @@ def get_env_var(name: str) -> str:
 
 def main():
     try:
-        pica_client = PicaClient(
-            secret=get_env_var("PICA_SECRET"),
-            options=PicaClientOptions(
-                # server_url="https://my-self-hosted-server.com",
-                # connectors=["connector-key-1", "connector-key-2"]
-                # identity_type="user"
-                # identity="user-id",
-            )
-        )
+        pica_client = PicaClient(secret=get_env_var("PICA_SECRET"))
         
         llm = ChatOpenAI(
             temperature=0,
@@ -43,17 +35,18 @@ def main():
         agent = create_pica_agent(
             client=pica_client,
             llm=llm,
-            agent_type=AgentType.OPENAI_FUNCTIONS,
-            system_prompt="Always start your response with `Pica works like ✨\n`" # Optional: Custom system prompt to append
+            agent_type=AgentType.OPENAI_FUNCTIONS
         )
 
+        # Execute a multi-step workflow using the GitHub Connector
         result = agent.invoke({
             "input": (
-                "What connections do I have access to?"
+                "Star the picahq/pica repo in github. "
+                "Then, list 5 of the repositories that I have starred in github."
             )
         })
         
-        print(f"\nWorkflow Result:\n {result}")
+        print(f"\nGitHub Agent Result:\n {result}")
     
     except Exception as e:
         print(f"ERROR: An unexpected error occurred: {e}")

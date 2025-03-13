@@ -34,6 +34,8 @@ class PicaClient:
             options: Optional configuration parameters.
                 - server_url: Custom server URL to use instead of the default.
                 - connectors: List of connector keys to filter by.
+                - identity: Filter connections by specific identity ID.
+                - identity_type: Filter connections by identity type (user, team, or organization).
         """
         if not secret:
             logger.error("Pica API secret is required")
@@ -50,7 +52,7 @@ class PicaClient:
         self.base_url = options.server_url
         logger.info(f"Initializing Pica client with base URL: {self.base_url}")
         
-        self.get_connection_url = f"{self.base_url}/v1/vault/connections?limit=300"
+        self.get_connection_url = f"{self.base_url}/v1/vault/connections"
         self.available_actions_url = f"{self.base_url}/v1/knowledge"
         self.get_connection_definitions_url = f"{self.base_url}/v1/public/connection-definitions?limit=500"
         
@@ -58,6 +60,11 @@ class PicaClient:
         self._connectors_filter = options.connectors
         if self._connectors_filter:
             logger.debug(f"Filtering connections by keys: {self._connectors_filter}")
+            
+        self._identity_filter = options.identity
+        self._identity_type_filter = options.identity_type
+        if self._identity_filter or self._identity_type_filter:
+            logger.debug(f"Filtering connections by identity: {self._identity_filter}, type: {self._identity_type_filter}")
             
         self._system_prompt = get_default_system_prompt("Loading connections...")
         
@@ -111,12 +118,22 @@ class PicaClient:
             logger.debug("Fetching connections from API")
             headers = self._generate_headers()
             
-            log_request_response("GET", self.get_connection_url)
-            response = requests.get(self.get_connection_url, headers=headers)
+            query_params: Dict[str, Union[str, int]] = {"limit": 300}
+            
+            if self._identity_filter:
+                query_params["identity"] = self._identity_filter
+                
+            if self._identity_type_filter:
+                query_params["identityType"] = self._identity_type_filter
+            
+            url = self.get_connection_url
+            log_request_response("GET", url, request_data=query_params)
+            
+            response = requests.get(url, headers=headers, params=query_params)
             response.raise_for_status()
             
             data = response.json()
-            log_request_response("GET", self.get_connection_url, 
+            log_request_response("GET", url, 
                                 response_status=response.status_code, 
                                 response_data={"total": len(data.get("rows", []))})
             

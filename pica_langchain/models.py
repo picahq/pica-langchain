@@ -261,6 +261,14 @@ class PicaClientOptions(BaseModel):
         default_factory=list,
         description="List of connector keys to filter by"
     )
+    identity: Optional[str] = Field(
+        default=None,
+        description="Filter connections by specific identity ID"
+    )
+    identity_type: Optional[Literal["user", "team", "organization"]] = Field(
+        default=None,
+        description="Filter connections by identity type (user, team, or organization)"
+    )
     
     model_config = ConfigDict(
         populate_by_name=True,
