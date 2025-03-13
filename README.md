@@ -18,6 +18,8 @@ The `PicaClientOptions` class allows you to configure the Pica client with the f
 | --- | --- | --- | --- | --- |
 | server_url | str | No | https://api.picaos.com | URL for self-hosted Pica server. |
 | connectors | List[str] | No | All available connectors | List of connector keys to give the LLM access to. If not provided, all available connectors will be initialized. |
+| identity | str | No | None | Filter connections by specific identity ID. |
+| identity_type | "user", "team", or "organization" | No | None | Filter connections by identity type. |
 
 The `create_pica_agent` function allows customizing the following parameters:
 
