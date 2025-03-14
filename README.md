@@ -39,7 +39,16 @@ from pica_langchain import PicaClient, create_pica_agent
 from pica_langchain.models import PicaClientOptions
 
 # Initialize the Pica client
-pica_client = PicaClient(secret="your-pica-secret")
+pica_client = PicaClient(
+    secret="your-pica-secret",
+    options=PicaClientOptions(
+        # server_url="https://my-self-hosted-server.com",
+        # identity_type="user"
+        # identity="user-id",
+
+        connectors=["*"] # Initialize all available connections for this example
+    )
+)
 
 # Create a LangChain agent with Pica tools
 llm = ChatOpenAI(
