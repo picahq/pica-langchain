@@ -77,7 +77,18 @@ class PicaClient:
             return
         
         logger.info("Initializing Pica client connections and definitions")
-        self._initialize_connections()
+        
+        if self._connectors_filter and "*" in self._connectors_filter:
+            logger.debug("Initializing all available connections")
+            self._initialize_connections()
+            self._connectors_filter = []
+        elif self._connectors_filter:
+            logger.debug(f"Initializing specific connections: {self._connectors_filter}")
+            self._initialize_connections()
+        else:
+            logger.debug("No connections to initialize")
+            self.connections = []
+        
         self._initialize_connection_definitions()
         
         filtered_connections = [conn for conn in self.connections if conn.active]
@@ -89,7 +100,7 @@ class PicaClient:
                 if conn.key in self._connectors_filter
             ]
             logger.debug(f"After filtering, {len(filtered_connections)} connections remain")
-            
+        
         connections_info = (
             "\t* " + "\n\t* ".join([
                 f"{conn.platform} - Key: {conn.key}" 

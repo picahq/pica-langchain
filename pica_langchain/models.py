@@ -259,7 +259,7 @@ class PicaClientOptions(BaseModel):
     )
     connectors: List[str] = Field(
         default_factory=list,
-        description="List of connector keys to filter by"
+        description="List of connector keys to filter by. Use [\"*\"] to initialize all connections."
     )
     identity: Optional[str] = Field(
         default=None,

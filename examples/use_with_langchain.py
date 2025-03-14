@@ -28,9 +28,10 @@ def main():
             secret=get_env_var("PICA_SECRET"),
             options=PicaClientOptions(
                 # server_url="https://my-self-hosted-server.com",
-                # connectors=["connector-key-1", "connector-key-2"]
                 # identity_type="user"
                 # identity="user-id",
+
+                connectors=["*"] # Initialize all available connections for this example
             )
         )
         
