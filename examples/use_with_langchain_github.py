@@ -9,6 +9,7 @@ import sys
 from langchain_openai import ChatOpenAI
 from langchain.agents import AgentType
 from pica_langchain import PicaClient, create_pica_agent
+from pica_langchain.models import PicaClientOptions
 
 
 def get_env_var(name: str) -> str:
@@ -24,7 +25,12 @@ def get_env_var(name: str) -> str:
 
 def main():
     try:
-        pica_client = PicaClient(secret=get_env_var("PICA_SECRET"))
+        pica_client = PicaClient(
+            secret=get_env_var("PICA_SECRET"),
+            options=PicaClientOptions(
+                connectors=["your-github-connector-key"] # Replace with your GitHub connector key
+            )
+        )
         
         llm = ChatOpenAI(
             temperature=0,
