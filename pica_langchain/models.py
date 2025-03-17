@@ -269,6 +269,10 @@ class PicaClientOptions(BaseModel):
         default=None,
         description="Filter connections by identity type (user, team, or organization)"
     )
+    authkit: bool = Field(
+        default=False,
+        description="Whether to use the AuthKit integration which enables the promptToConnectPlatform tool"
+    )
     
     model_config = ConfigDict(
         populate_by_name=True,

@@ -1,6 +1,5 @@
 """
-Example demonstrating how to use pica-langchain with LangChain 
-to execute a multi-step workflow using the GitHub Connector.
+Example demonstrating how to use pica-langchain with LangChain.
 """
 
 import os
@@ -28,7 +27,8 @@ def main():
         pica_client = PicaClient(
             secret=get_env_var("PICA_SECRET"),
             options=PicaClientOptions(
-                connectors=["your-github-connector-key"] # Replace with your GitHub connector key
+                authkit=True, # Enable AuthKit settings
+                connectors=["*"]
             )
         )
         
@@ -42,18 +42,16 @@ def main():
             client=pica_client,
             llm=llm,
             agent_type=AgentType.OPENAI_FUNCTIONS,
-            # return_intermediate_steps=True, # Optional: Return intermediate steps
+            return_intermediate_steps=True # Show the intermediate steps
         )
 
-        # Execute a multi-step workflow using the GitHub Connector
         result = agent.invoke({
             "input": (
-                "Star the picahq/pica repo in github. "
-                "Then, list 5 of the repositories that I have starred in github."
+                "Connect to google calendar" # This will trigger the promptToConnectPlatform tool if the user doesn't have gmail connected
             )
         })
         
-        print(f"\nGitHub Agent Result:\n {result}")
+        print(f"\nWorkflow Result:\n {result}")
     
     except Exception as e:
         print(f"ERROR: An unexpected error occurred: {e}")

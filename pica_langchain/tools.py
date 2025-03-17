@@ -222,3 +222,50 @@ class ExecuteSchema(BaseModel):
 GetAvailableActionsTool.args_schema = GetAvailableActionsSchema
 GetActionKnowledgeTool.args_schema = GetActionKnowledgeSchema
 ExecuteTool.args_schema = ExecuteSchema
+
+class PromptToConnectPlatformTool(BaseTool):
+    """Tool for prompting the user to connect to a platform they don't currently have access to."""
+    
+    name: ClassVar[str] = "prompt_to_connect_platform"
+    description: ClassVar[str] = "Prompt the user to connect to a platform that they do not currently have access to"
+    client: PicaClient
+    
+    def _run(
+        self, 
+        platform_name: str,
+        run_manager: Optional[CallbackManagerForToolRun] = None
+    ) -> str:
+        """
+        Run the tool to prompt connection to a platform.
+        
+        Args:
+            platform_name: The platform to connect to.
+            run_manager: Callback manager for the tool run.
+            
+        Returns:
+            JSON string with the platform name.
+        """
+        logger.info(f"Prompting user to connect to platform: {platform_name}")
+        
+        response = {
+            "success": True,
+            "platform": platform_name
+        }
+        
+        return json.dumps(response, default=str)
+    
+    async def _arun(
+        self, 
+        platform_name: str, 
+        run_manager: Optional[AsyncCallbackManagerForToolRun] = None
+    ) -> str:
+        """
+        Async version of the run method.
+        """
+        return self._run(platform_name=platform_name)
+
+
+class PromptToConnectPlatformSchema(BaseModel):
+    platform_name: str = Field(description="The platform name that the user needs to connect to")
+
+PromptToConnectPlatformTool.args_schema = PromptToConnectPlatformSchema

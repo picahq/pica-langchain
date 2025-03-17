@@ -18,6 +18,7 @@ The `PicaClientOptions` class allows you to configure the Pica client with the f
 | --- | --- | --- | --- | --- |
 | server_url | str | No | https://api.picaos.com | URL for self-hosted Pica server. |
 | connectors | List[str] | No | [] | List of connector keys to filter by. Pass ["*"] to initialize all available connectors, or specific connector keys to filter. If empty, no connections will be initialized. |
+| authkit | bool | No | False | If True, the SDK will use Authkit to connect to prompt the user to connect to a platform that they do not currently have access to |
 | identity | str | No | None | Filter connections by specific identity ID. |
 | identity_type | "user", "team", or "organization" | No | None | Filter connections by identity type. |
 
@@ -29,6 +30,7 @@ The `create_pica_agent` function allows customizing the following parameters:
 | system_prompt | str | No | None | A custom system prompt to append to the default system prompt. |
 | agent_type | AgentType | No | OPENAI_FUNCTIONS | The type of agent to create. |
 | tools | List[BaseTool] | No | None | A list of tools to use in the agent. |
+| return_intermediate_steps | bool | No | False | Whether to return intermediate steps. |
 
 ### Quick Start
 
@@ -45,6 +47,7 @@ pica_client = PicaClient(
         # server_url="https://my-self-hosted-server.com",
         # identity_type="user"
         # identity="user-id",
+        # authkit=True,
 
         connectors=["*"] # Initialize all available connections for this example
     )
@@ -61,6 +64,7 @@ agent = create_pica_agent(
     client=pica_client,
     llm=llm,
     agent_type=AgentType.OPENAI_FUNCTIONS,
+    # return_intermediate_steps=True, # Optional: Return intermediate steps
 
     # Optional: Custom system prompt to append
     system_prompt="Always start your response with `Pica works like ✨\n`"

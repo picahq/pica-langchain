@@ -6,6 +6,7 @@ import os
 import sys
 from pica_langchain import PicaClient, create_pica_tools
 
+
 def main():
     pica_secret = os.environ.get("PICA_SECRET")
 
