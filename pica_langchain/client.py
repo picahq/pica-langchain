@@ -17,7 +17,7 @@ from .models import (
     PicaClientOptions
 )
 from .logger import get_logger, log_request_response
-from .prompts import get_default_system_prompt, generate_full_system_prompt
+from .prompts import get_default_system_prompt, get_authkit_system_prompt, generate_full_system_prompt
 
 logger = get_logger()
 
@@ -36,6 +36,7 @@ class PicaClient:
                 - connectors: List of connector keys to filter by.
                 - identity: Filter connections by specific identity ID.
                 - identity_type: Filter connections by identity type (user, team, or organization).
+                - authkit: Whether to use the AuthKit integration which enables the promptToConnectPlatform tool.
         """
         if not secret:
             logger.error("Pica API secret is required")
@@ -65,8 +66,13 @@ class PicaClient:
         self._identity_type_filter = options.identity_type
         if self._identity_filter or self._identity_type_filter:
             logger.debug(f"Filtering connections by identity: {self._identity_filter}, type: {self._identity_type_filter}")
-            
-        self._system_prompt = get_default_system_prompt("Loading connections...")
+        
+        self._use_authkit = options.authkit
+        if self._use_authkit:
+            logger.debug("Using AuthKit settings")
+            self._system_prompt = get_authkit_system_prompt("Loading connections...")
+        else:
+            self._system_prompt = get_default_system_prompt("Loading connections...")
         
         self.initialize()
     
@@ -115,10 +121,16 @@ class PicaClient:
             for def_ in self.connection_definitions
         ])
         
-        self._system_prompt = get_default_system_prompt(
-            connections_info, 
-            available_platforms_info
-        )
+        if self._use_authkit:
+            self._system_prompt = get_authkit_system_prompt(
+                connections_info, 
+                available_platforms_info
+            )
+        else:
+            self._system_prompt = get_default_system_prompt(
+                connections_info, 
+                available_platforms_info
+            )
 
         self._initialized = True
         logger.info("Pica client initialization complete")

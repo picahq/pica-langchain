@@ -6,7 +6,7 @@ from langchain.llms.base import BaseLLM
 from langchain.chat_models.base import BaseChatModel
 
 from .client import PicaClient
-from .tools import GetAvailableActionsTool, GetActionKnowledgeTool, ExecuteTool
+from .tools import GetAvailableActionsTool, GetActionKnowledgeTool, ExecuteTool, PromptToConnectPlatformTool
 
 
 def create_pica_tools(client: PicaClient) -> List[BaseTool]:
@@ -24,6 +24,11 @@ def create_pica_tools(client: PicaClient) -> List[BaseTool]:
         GetActionKnowledgeTool(client=client),
         ExecuteTool(client=client)
     ]
+    
+    # Add the PromptToConnectPlatformTool if AuthKit is enabled
+    if hasattr(client, '_use_authkit') and client._use_authkit:
+        tools.append(PromptToConnectPlatformTool(client=client))
+    
     return tools
 
 
