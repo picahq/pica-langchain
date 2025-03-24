@@ -47,7 +47,7 @@ def main():
 
         result = agent.invoke({
             "input": (
-                "Connect to google calendar" # This will trigger the promptToConnectPlatform tool if the user doesn't have gmail connected
+                "Connect to google calendar" # This will trigger the promptToConnectPlatform tool if the user doesn't have google calendar connected
             )
         })
         

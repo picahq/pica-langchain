@@ -43,12 +43,34 @@ def main():
             client=pica_client,
             llm=llm_with_handler,
             agent_type=AgentType.OPENAI_FUNCTIONS,
+            return_intermediate_steps=True
         )
 
         for chunk in agent_with_handler.stream({
-            "input": "List three platforms available in Pica."
+            "input": "What actions can I perform on google calendar?"
         }):
-            print(chunk)
+            # Check for intermediate_steps in the chunk
+            if "intermediate_steps" in chunk:
+                print("\n=== INTERMEDIATE STEPS ===")
+                for step in chunk["intermediate_steps"]:
+                    # Handle different possible formats of the step
+                    action = step[0]
+                    output = step[1]
+                    
+                    # Print action info with proper attribute access
+                    print(f"Tool: {action.tool if hasattr(action, 'tool') else 'Unknown'}")
+                    
+                    # Get the tool input (different ways it might be structured)
+                    if hasattr(action, 'tool_input'):
+                        tool_input = action.tool_input
+                    elif hasattr(action, 'args'):
+                        tool_input = action.args
+                    else:
+                        tool_input = str(action)
+                        
+                    print(f"Input: {tool_input}")
+                    print(f"Output: {output}")
+                    print("---")
         
     except Exception as e:
         print(f"ERROR: An unexpected error occurred: {e}")
