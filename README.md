@@ -99,8 +99,7 @@ llm = ChatOpenAI(temperature=0, model="gpt-4o")
 agent = initialize_agent(
     tools,
     llm,
-    agent=AgentType.OPENAI_FUNCTIONS,
-    verbose=True
+    agent=AgentType.OPENAI_FUNCTIONS
 )
 
 # Use the agent
