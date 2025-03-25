@@ -1,5 +1,7 @@
 # pica-langchain
 
+[![pypi version](https://img.shields.io/pypi/v/pica-langchain)](https://pypi.org/project/pica-langchain)
+
 A Python package for integrating [Pica](https://picaos.com) with [LangChain](https://langchain.com).
 
 Full Documentation: [https://docs.picaos.com/sdk/langchain](https://docs.picaos.com/sdk/langchain)
