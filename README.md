@@ -24,7 +24,7 @@ The `PicaClientOptions` class allows you to configure the Pica client with the f
 | connectors | List[str] | No | [] | List of connector keys to filter by. Pass ["*"] to initialize all available connectors, or specific connector keys to filter. If empty, no connections will be initialized. |
 | authkit | bool | No | False | If True, the SDK will use Authkit to connect to prompt the user to connect to a platform that they do not currently have access to |
 | identity | str | No | None | Filter connections by specific identity ID. |
-| identity_type | "user", "team", or "organization" | No | None | Filter connections by identity type. |
+| identity_type | "user", "team", "organization", or "project" | No | None | Filter connections by identity type. |
 
 The `create_pica_agent` function allows customizing the following parameters:
 
@@ -127,7 +127,7 @@ cd pica-langchain
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate
 ```
 
 3. Create a connection on [Pica](https://app.picaos.com):

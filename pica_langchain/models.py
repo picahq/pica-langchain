@@ -265,9 +265,9 @@ class PicaClientOptions(BaseModel):
         default=None,
         description="Filter connections by specific identity ID"
     )
-    identity_type: Optional[Literal["user", "team", "organization"]] = Field(
+    identity_type: Optional[Literal["user", "team", "organization", "project"]] = Field(
         default=None,
-        description="Filter connections by identity type (user, team, or organization)"
+        description="Filter connections by identity type (user, team, organization, or project)"
     )
     authkit: bool = Field(
         default=False,
