@@ -35,7 +35,7 @@ class PicaClient:
                 - server_url: Custom server URL to use instead of the default.
                 - connectors: List of connector keys to filter by.
                 - identity: Filter connections by specific identity ID.
-                - identity_type: Filter connections by identity type (user, team, or organization).
+                - identity_type: Filter connections by identity type (user, team, organization, or project).
                 - authkit: Whether to use the AuthKit integration which enables the promptToConnectPlatform tool.
         """
         if not secret:
