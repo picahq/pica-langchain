@@ -5,6 +5,7 @@ Example demonstrating basic usage of the Pica LangChain tools.
 import os
 import sys
 from pica_langchain import PicaClient, create_pica_tools
+from pica_langchain.models import PicaClientOptions
 
 
 def main():
@@ -14,7 +15,12 @@ def main():
         print("ERROR: PICA_SECRET environment variable must be set")
         sys.exit(1)
 
-    client = PicaClient(secret=pica_secret)
+    client = PicaClient(
+        secret=pica_secret,
+        options=PicaClientOptions(
+            connectors=["*"]
+        )
+    )
 
     # Create LangChain tools
     tools = create_pica_tools(client)

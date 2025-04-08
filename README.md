@@ -93,7 +93,12 @@ from langchain_openai import ChatOpenAI
 from pica_langchain import PicaClient, create_pica_tools
 
 # Initialize the Pica client
-pica_client = PicaClient(secret="your-pica-secret")
+pica_client = PicaClient(
+    secret="your-pica-secret",
+    options=PicaClientOptions(
+        connectors=["*"]
+    )
+)
 
 # Create Pica tools
 tools = create_pica_tools(pica_client)

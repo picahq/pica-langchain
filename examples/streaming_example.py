@@ -11,7 +11,6 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from pica_langchain import PicaClient, create_pica_agent
 from pica_langchain.models import PicaClientOptions
 
-
 def get_env_var(name: str) -> str:
     """Get environment variable or exit if not set."""
     value = os.environ.get(name)
