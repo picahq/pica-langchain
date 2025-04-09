@@ -164,7 +164,12 @@ class ExecuteTool(BaseTool):
         else:
             logger.warning(f"Failed to execute action: {response.message}")
         
-        return json.dumps(response.model_dump(), default=str)
+        # Remove knowledge field from response before serializing to JSON
+        response_dict = response.model_dump()
+        if "knowledge" in response_dict:
+            del response_dict["knowledge"]
+        
+        return json.dumps(response_dict, default=str)
     
     async def _arun(
         self, 
@@ -185,6 +190,7 @@ class ExecuteTool(BaseTool):
         Async version of the run method.
         """
 
+        # We'll call _run which already handles removing the knowledge field
         return self._run(
             platform=platform,
             action_id=action_id,
