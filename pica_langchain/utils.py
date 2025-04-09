@@ -70,8 +70,18 @@ def create_pica_agent(
     
     # Generate system prompt with Pica information
     if system_prompt:
-        # Use the async method but run it synchronously
-        combined_system_prompt = asyncio.run(client.generate_system_prompt(system_prompt))
+        try:
+            loop = asyncio.get_running_loop()
+            # We're in an event loop, use the client.system property directly
+            # and append the user system prompt
+            combined_system_prompt = client.system
+            if system_prompt:
+                # Manually combine the prompts
+                from .prompts import generate_full_system_prompt
+                combined_system_prompt = generate_full_system_prompt(combined_system_prompt, system_prompt)
+        except RuntimeError:
+            # No running event loop, safe to use asyncio.run()
+            combined_system_prompt = asyncio.run(client.generate_system_prompt(system_prompt))
     else:
         # If no custom prompt, use the default system prompt
         combined_system_prompt = client.system
