@@ -1,5 +1,6 @@
+import warnings
 from typing import List, Optional, Dict, Any, Union
-
+from langchain_core._api.deprecation import LangChainDeprecationWarning
 from langchain.tools import BaseTool
 from langchain.agents import AgentType, initialize_agent
 from langchain.llms.base import BaseLLM
@@ -8,6 +9,7 @@ from langchain.chat_models.base import BaseChatModel
 from .client import PicaClient
 from .tools import GetAvailableActionsTool, GetActionKnowledgeTool, ExecuteTool, PromptToConnectPlatformTool
 
+warnings.filterwarnings("ignore", category=LangChainDeprecationWarning)
 
 def create_pica_tools(client: PicaClient) -> List[BaseTool]:
     """
