@@ -6,13 +6,12 @@ This example creates an interactive chat session in the terminal with streaming 
 import os
 import sys
 import time
-from typing import Optional, Generator, Dict, Any
+from typing import Dict, Any
 
 from langchain_openai import ChatOpenAI
 from langchain.agents import AgentType
 from langchain.schema import LLMResult
 from langchain.callbacks.base import BaseCallbackHandler
-from langchain.schema.output import GenerationChunk
 
 from pica_langchain import PicaClient, create_pica_agent
 from pica_langchain.models import PicaClientOptions
@@ -67,7 +66,6 @@ def main():
     print("-------------------------------------------")
     
     try:
-        # Initialize the Pica client
         pica_client = PicaClient(
             secret=get_env_var("PICA_SECRET"),
             options=PicaClientOptions(
@@ -104,7 +102,6 @@ def main():
     except Exception as e:
         print(f"\n❌ ERROR: An unexpected error occurred: {e}")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
