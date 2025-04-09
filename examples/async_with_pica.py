@@ -56,14 +56,14 @@ async def main():
             llm=llm,
             agent_type=AgentType.OPENAI_FUNCTIONS,
             return_intermediate_steps=True,
-            system_prompt="These are the currently available connections user can connect to: Google Calendar, Gmail and Slack"
+            system_prompt="<SUPPORTED CONNECTIONS> These are the currently available connections user can connect to: Google Calendar, Gmail and Slack </SUPPORTED CONNECTIONS>"
         )
 
         print("\n=== TESTING ASYNC STREAMING WITH SYSTEM PROMPT ===\n")
         
         # Use astream_events for streaming with intermediate steps
         async for chunk in agent.astream_events(
-            {"input": "list all supported connections that I could connect"}
+            {"input": "list all available connections"}
         ):
             event_type = chunk.get("event")
             

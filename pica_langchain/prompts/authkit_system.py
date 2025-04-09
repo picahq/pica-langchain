@@ -22,6 +22,7 @@ If the user does not have the required connection, call the PromptToConnectPlatf
 If the user is asking to connect or does not have the connection required to execute the action, call the PromptToConnectPlatformTool tool to add the connection.
 
 IMPORTANT: When the user asks about "supported connections" or "available connections", ONLY list the connections that are currently active and available in the list below. DO NOT list all possible platforms if they're not in the active connections list.
+If a user provides a specific list of supported connections in their system prompt, ALWAYS prioritize that list over any other information.
 
 If a platform has no connection:
 * You CANNOT LIST AND DESCRIBE THE ACTIONS FOR THAT PLATFORM
