@@ -56,7 +56,7 @@ async def main():
             llm=llm,
             agent_type=AgentType.OPENAI_FUNCTIONS,
             return_intermediate_steps=True,
-            system_prompt="<SUPPORTED CONNECTIONS> These are the currently available connections user can connect to: Google Calendar, Gmail and Slack </SUPPORTED CONNECTIONS>"
+            system_prompt="Always start your response with `Pica works like ✨\n`" # Optional: Custom system prompt to append
         )
 
         print("\n=== TESTING ASYNC STREAMING WITH SYSTEM PROMPT ===\n")
