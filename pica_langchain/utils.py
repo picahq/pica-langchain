@@ -76,7 +76,6 @@ def create_pica_agent(
             # and append the user system prompt
             combined_system_prompt = client.system
             if system_prompt:
-                # Manually combine the prompts
                 from .prompts import generate_full_system_prompt
                 combined_system_prompt = generate_full_system_prompt(combined_system_prompt, system_prompt)
         except RuntimeError:
