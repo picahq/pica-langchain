@@ -77,7 +77,7 @@ class PicaClient:
         self.initialize()
     
     def initialize(self) -> None:
-        """Initialize the client by fetching connections and connection definitions."""
+        """Initialize the client by fetching connections and available connectors."""
         if self._initialized:
             logger.debug("Client already initialized, skipping initialization")
             return
@@ -161,16 +161,16 @@ class PicaClient:
                                 response_data={"total": len(data.get("rows", []))})
             
             self.connections = [Connection(**conn) for conn in data.get("rows", [])]
-            logger.info(f"Successfully fetched {len(self.connections)} connections")
+            logger.info(f"Successfully fetched {len(self.connections)} active connections")
         except Exception as e:
             logger.error(f"Failed to initialize connections: {e}", exc_info=True)
             print(f"Failed to initialize connections: {e}")
             self.connections = []
     
     def _initialize_connection_definitions(self) -> None:
-        """Fetch connection definitions from the API."""
+        """Fetch available connectors from the API."""
         try:
-            logger.debug("Fetching connection definitions from API")
+            logger.debug("Fetching available connectors from API")
             headers = self._generate_headers()
             
             log_request_response("GET", self.get_connection_definitions_url)
@@ -186,10 +186,10 @@ class PicaClient:
                 ConnectionDefinition(**def_) 
                 for def_ in data.get("rows", [])
             ]
-            logger.info(f"Successfully fetched {len(self.connection_definitions)} connection definitions")
+            logger.info(f"Successfully fetched {len(self.connection_definitions)} available connectors")
         except Exception as e:
-            logger.error(f"Failed to initialize connection definitions: {e}", exc_info=True)
-            print(f"Failed to initialize connection definitions: {e}")
+            logger.error(f"Failed to initialize available connectors: {e}", exc_info=True)
+            print(f"Failed to initialize available connectors: {e}")
             self.connection_definitions = []
     
     def _generate_headers(self) -> Dict[str, str]:

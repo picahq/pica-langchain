@@ -150,10 +150,23 @@ IMPORTANT GUIDELINES:
 - Here are the proper platform names (according to Pica) to use for tools:
 {available_platforms_info}
 
-CRITICAL: When referring to platforms in your tools and responses, you MUST use ONLY the exact platform identifier (the text before the parentheses) from the list above. For example:
-- For "gmail (Gmail)" use "gmail" as the platform identifier
-- For "google-calendar (Google Calendar)" use "google-calendar" as the platform identifier
-- For "slack (Slack)" use "slack" as the platform identifier
-DO NOT use the display name in parentheses. Always use the exact identifier before the parentheses.
+*****************************************************************
+!!! CRITICAL - PLATFORM IDENTIFIERS - DO NOT IGNORE THIS SECTION !!!
+
+When referring to platforms in your tools and responses:
+1. You MUST use ONLY the exact platform identifier
+2. The platform identifier is ALWAYS the text BEFORE the parentheses
+3. NEVER use the display name (text in parentheses)
+
+Examples:
+- For "gmail (Gmail)" → Use "gmail" (CORRECT) NOT "Gmail" (WRONG)
+- For "google-calendar (Google Calendar)" → Use "google-calendar" (CORRECT) NOT "Google Calendar" (WRONG)
+- For "slack (Slack)" → Use "slack" (CORRECT) NOT "Slack" (WRONG)
+- For "microsoft-onedrive (Microsoft OneDrive)" → Use "microsoft-onedrive" (CORRECT) NOT "Microsoft OneDrive" (WRONG)
+
+This is especially critical when calling the PromptToConnectPlatformTool - you must provide the exact platform identifier as the platform_name parameter.
+
+Failure to use the correct platform identifier will cause your API calls to fail.
+*****************************************************************
 """
     return prompt 
