@@ -149,5 +149,11 @@ IMPORTANT GUIDELINES:
 
 - Here are the proper platform names (according to Pica) to use for tools:
 {available_platforms_info}
+
+CRITICAL: When referring to platforms in your tools and responses, you MUST use ONLY the exact platform identifier (the text before the parentheses) from the list above. For example:
+- For "gmail (Gmail)" use "gmail" as the platform identifier
+- For "google-calendar (Google Calendar)" use "google-calendar" as the platform identifier
+- For "slack (Slack)" use "slack" as the platform identifier
+DO NOT use the display name in parentheses. Always use the exact identifier before the parentheses.
 """
     return prompt 
