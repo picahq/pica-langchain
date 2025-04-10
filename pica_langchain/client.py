@@ -74,6 +74,8 @@ class PicaClient:
         else:
             self._system_prompt = get_default_system_prompt("Loading connections...")
         
+        self._authkit_supported_platforms = options.authkit_supported_platforms
+        
         self.initialize()
     
     def initialize(self) -> None:
@@ -116,9 +118,18 @@ class PicaClient:
             else "No connections available"
         )
         
+        # Filter connection definitions based on authkit_supported_platforms if provided
+        filtered_connection_definitions = self.connection_definitions
+        if self._use_authkit and self._authkit_supported_platforms:
+            filtered_connection_definitions = [
+                def_ for def_ in self.connection_definitions 
+                if def_.platform in self._authkit_supported_platforms
+            ]
+            logger.debug(f"Filtered available platforms from {len(self.connection_definitions)} to {len(filtered_connection_definitions)} based on authkit_supported_platforms")
+        
         available_platforms_info = "\n\t* ".join([
             f"{def_.platform} ({def_.frontend.spec.title})"
-            for def_ in self.connection_definitions
+            for def_ in filtered_connection_definitions
         ])
         
         if self._use_authkit:
@@ -132,6 +143,9 @@ class PicaClient:
                 available_platforms_info
             )
 
+        logger.info(f"authkit supported platform = {self._authkit_supported_platforms}")
+        logger.info(f"connections_info = {connections_info}")
+        logger.info(f"available_platforms_info = {available_platforms_info}")
         self._initialized = True
         logger.info("Pica client initialization complete")
     

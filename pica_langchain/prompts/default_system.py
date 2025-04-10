@@ -17,6 +17,9 @@ def get_default_system_prompt(connections_info: str, available_platforms_info: s
 IMPORTANT: ALWAYS START BY LISTING AVAILABLE ACTIONS FOR THE PLATFORM!
 Before attempting any operation, you must first discover what actions are available.
 
+If the user asks about "supported connections" list down the information nicely from available_platforms_info provided in the prompt here
+If the user asks about all the connected platforms, list down the information nicely from connections_info provided in the prompt here
+
 PLATFORM COMMITMENT:
 - You can freely list and explore actions across ANY platform
 - If a platform has no connection:
