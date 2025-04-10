@@ -272,6 +272,6 @@ class PromptToConnectPlatformTool(BaseTool):
 
 
 class PromptToConnectPlatformSchema(BaseModel):
-    platform_name: str = Field(description="The platform name that the user needs to connect to")
+    platform_name: str = Field(description="The platform name that the user needs to connect to. Always use the exact platform identifier (text before parentheses), e.g., 'gmail' for 'gmail (Gmail)'.")
 
 PromptToConnectPlatformTool.args_schema = PromptToConnectPlatformSchema
