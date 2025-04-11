@@ -128,26 +128,22 @@ class Settings(BaseModel):
 
 class ConnectionDefinition(BaseModel):
     """Model for a connection definition."""
-    auth_method: Optional[Dict[str, Any]] = Field(alias="authMethod")
-    _id: str
-    platform_version: str = Field(alias="platformVersion")
-    platform: str
-    type: str
+    _id: Optional[str] = None
     name: str
-    auth_secrets: List[Any] = Field(alias="authSecrets")
-    frontend: Frontend
-    paths: Optional[Dict[str, Optional[str]]] = None
-    settings: Optional[Dict[str, Any]] = None
-    hidden: bool
-    test_connection: Optional[str] = Field(alias="testConnection")
+    key: str
+    platform: str
+    platform_version: str = Field(alias="platformVersion")
+    description: Optional[str] = None
+    category: Optional[str] = None
+    image: Optional[str] = None
+    tags: Optional[List[str]] = None
+    oauth: Optional[bool] = None
     created_at: int = Field(alias="createdAt")
     updated_at: int = Field(alias="updatedAt")
     updated: bool
     version: str
     last_modified_by: str = Field(alias="lastModifiedBy")
     deleted: bool
-    change_log: Optional[List[Dict[str, Any]]] = None
-    tags: Optional[List[str]] = None
     active: bool
     deprecated: bool
     
