@@ -46,7 +46,7 @@ def main():
         )
 
         for chunk in agent_with_handler.stream({
-            "input": "List three platforms available in Pica."
+            "input": "List all platforms available in Pica."
         }):
             print(chunk)
         

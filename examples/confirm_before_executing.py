@@ -106,7 +106,7 @@ def main():
         # Wrap agent invocation to catch our short-circuit exception.
         try:
             result = agent.invoke({
-                "input": "Send an email to paul@picaos.com with a funny joke using gmail"
+                "input": "Send an email to john@example.com with a funny joke using gmail"
             })
             print(f"\nPica Agent Result:\n{result}")
         except ToolExecutionComplete as tec:

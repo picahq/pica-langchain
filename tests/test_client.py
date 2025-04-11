@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 from pica_langchain.client import PicaClient
-from pica_langchain.models import Connection, ExecuteParams, ActionToExecute
+from pica_langchain.models import Connection, ExecuteParams, ActionToExecute, PicaClientOptions, ConnectionDefinition
 
 class TestPicaClient(unittest.TestCase):
     @patch('requests.get')
@@ -184,6 +184,130 @@ class TestPicaClient(unittest.TestCase):
         self.assertTrue(result.success)
         self.assertEqual(result.platform, "gmail")
         self.assertEqual(result.data, {"success": True, "data": "test data"})
+
+    @patch('requests.get')
+    def test_initialize_connection_definitions_with_authkit(self, mock_get):
+        """Test that the authkit parameter is added to the URL when enabled."""
+        # Prepare a mock response with connection definition data
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "rows": [
+                {
+                    "_id": "def1",
+                    "name": "Gmail Connector",
+                    "key": "gmail-connector",
+                    "platform": "gmail",
+                    "platformVersion": "1.0",
+                    "description": "Connect to Gmail",
+                    "category": "email",
+                    "image": "https://example.com/gmail.png",
+                    "tags": ["email", "google"],
+                    "oauth": True,
+                    "createdAt": 1612345678,
+                    "updatedAt": 1612345679,
+                    "updated": True,
+                    "version": "1",
+                    "lastModifiedBy": "user1",
+                    "deleted": False,
+                    "active": True,
+                    "deprecated": False
+                }
+            ],
+            "total": 1,
+            "skip": 0,
+            "limit": 100
+        }
+        mock_response.raise_for_status = MagicMock()
+        mock_get.return_value = mock_response
+        
+        # Create client with authkit enabled
+        options = PicaClientOptions(authkit=True)
+        client = PicaClient("fake-secret", options=options)
+        
+        # Reset mock to clear initialization calls
+        mock_get.reset_mock()
+        
+        # Call method directly to test
+        client._initialize_connection_definitions()
+        
+        # Check that the request was made
+        mock_get.assert_called()
+        
+        # Get the params from the call
+        args, kwargs = mock_get.call_args
+        params = kwargs.get('params', {})
+        
+        # Assert the params contain the authkit parameter
+        self.assertIn('authkit', params)
+        self.assertEqual(params['authkit'], 'true')
+        
+        # Verify the connection definition was processed correctly
+        self.assertEqual(len(client.connection_definitions), 1)
+        self.assertEqual(client.connection_definitions[0].key, "gmail-connector")
+        self.assertEqual(client.connection_definitions[0].platform, "gmail")
+        self.assertTrue(client.connection_definitions[0].oauth)
+        
+    @patch('requests.get')
+    def test_initialize_connection_definitions_without_authkit(self, mock_get):
+        """Test that the authkit parameter is not added to the URL when disabled."""
+        # Prepare a mock response with connection definition data
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "rows": [
+                {
+                    "_id": "def1",
+                    "name": "Gmail Connector",
+                    "key": "gmail-connector",
+                    "platform": "gmail",
+                    "platformVersion": "1.0",
+                    "description": "Connect to Gmail",
+                    "category": "email",
+                    "image": "https://example.com/gmail.png",
+                    "tags": ["email", "google"],
+                    "oauth": True,
+                    "createdAt": 1612345678,
+                    "updatedAt": 1612345679,
+                    "updated": True,
+                    "version": "1",
+                    "lastModifiedBy": "user1",
+                    "deleted": False,
+                    "active": True,
+                    "deprecated": False
+                }
+            ],
+            "total": 1,
+            "skip": 0,
+            "limit": 100
+        }
+        mock_response.raise_for_status = MagicMock()
+        mock_get.return_value = mock_response
+        
+        # Create client with authkit disabled (default)
+        options = PicaClientOptions(authkit=False)
+        client = PicaClient("fake-secret", options=options)
+        
+        # Reset mock to clear initialization calls
+        mock_get.reset_mock()
+        
+        # Call method directly to test
+        client._initialize_connection_definitions()
+        
+        # Check that the request was made
+        mock_get.assert_called()
+        
+        # Get the params from the call
+        args, kwargs = mock_get.call_args
+        params = kwargs.get('params', {})
+        
+        # Assert the params do not contain the authkit parameter
+        self.assertNotIn('authkit', params,
+                        f"Found unexpected 'authkit' in params: {params}")
+        
+        # Verify the connection definition was processed correctly
+        self.assertEqual(len(client.connection_definitions), 1)
+        self.assertEqual(client.connection_definitions[0].key, "gmail-connector")
+        self.assertEqual(client.connection_definitions[0].platform, "gmail")
+        self.assertTrue(client.connection_definitions[0].oauth)
 
 if __name__ == '__main__':
     unittest.main()
