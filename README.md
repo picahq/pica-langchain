@@ -2,7 +2,7 @@
 
 [![pypi version](https://img.shields.io/pypi/v/pica-langchain)](https://pypi.org/project/pica-langchain)
 
-![Pica LangChain Banner](https://assets.picaos.com/git/pica-langchain.png)
+<img src="https://assets.picaos.com/github/langchain.svg" alt="Pica LangChain Banner" style="border-radius: 5px;">
 
 A Python package for integrating [Pica](https://picaos.com) with [LangChain](https://langchain.com).
 
