@@ -4,6 +4,9 @@ import requests
 from requests_toolbelt import MultipartEncoder
 import sys
 import re
+from langchain.tools import BaseTool
+
+from .mcp import MCPClientOptions, PicaMCPClient
 
 from .models import (
     Connection, 
@@ -20,6 +23,7 @@ from .logger import get_logger, log_request_response
 from .prompts import get_default_system_prompt, get_authkit_system_prompt, generate_full_system_prompt
 
 logger = get_logger()
+
 
 class PicaClient:
     """
@@ -74,6 +78,15 @@ class PicaClient:
         else:
             self._system_prompt = get_default_system_prompt("Loading connections...")
         
+        self._authkit_supported_platforms = options.authkit_supported_platforms
+
+        self.mcp_client = None
+        self.mcp_tools = []
+        if options.mcp_options:
+            logger.debug("Initializing MCP client with provided options")
+            mcp_options = MCPClientOptions(servers=options.mcp_options)
+            self.mcp_client = PicaMCPClient(options=mcp_options)        
+        
         self.initialize()
     
     def initialize(self) -> None:
@@ -116,6 +129,15 @@ class PicaClient:
             else "No connections available"
         )
         
+        # Filter connection definitions based on authkit_supported_platforms if provided
+        filtered_connection_definitions = self.connection_definitions
+        if self._use_authkit and self._authkit_supported_platforms:
+            filtered_connection_definitions = [
+                def_ for def_ in self.connection_definitions 
+                if def_.platform in self._authkit_supported_platforms
+            ]
+            logger.debug(f"Filtered available platforms from {len(self.connection_definitions)} to {len(filtered_connection_definitions)} based on authkit_supported_platforms")
+        
         available_platforms_info = "\n\t* ".join([
             f"{def_.platform} ({def_.name})"
             for def_ in self.connection_definitions
@@ -132,6 +154,19 @@ class PicaClient:
                 available_platforms_info
             )
 
+        # Initialize MCP client if available
+        if self.mcp_client:
+            logger.info("Initializing MCP client")
+            try:
+                import asyncio
+                self.mcp_tools = asyncio.run(self.mcp_client.initialize())
+                logger.info(f"Loaded {len(self.mcp_tools)} tools from MCP servers")
+            except Exception as e:
+                logger.error(f"Error initializing MCP client: {e}")            
+
+        logger.info(f"authkit supported platform = {self._authkit_supported_platforms}")
+        logger.info(f"connections_info = {connections_info}")
+        logger.info(f"available_platforms_info = {available_platforms_info}")
         self._initialized = True
         logger.info("Pica client initialization complete")
     
@@ -204,7 +239,7 @@ class PicaClient:
         return {
             "Content-Type": "application/json",
             "x-pica-secret": self.secret,
-        }
+        }        
     
     async def generate_system_prompt(self, user_system_prompt: Optional[str] = None) -> str:
         """
@@ -412,7 +447,16 @@ class PicaClient:
                 message=str(e),
                 raw=str(e)
             )
-    
+
+    def get_mcp_tools(self) -> List[BaseTool]:
+        """
+        Get tools from connected MCP servers.
+        
+        Returns:
+            List of LangChain tools from MCP servers.
+        """
+        return self.mcp_tools    
+
     def _replace_path_variables(
         self, 
         path: str, 

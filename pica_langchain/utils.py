@@ -34,6 +34,26 @@ def create_pica_tools(client: PicaClient) -> List[BaseTool]:
     return tools
 
 
+def get_tools_from_client(client: PicaClient) -> List[BaseTool]:
+    """
+    Get all tools from a Pica client, including both Pica tools and MCP tools.
+    
+    Args:
+        client: The Pica client to use.
+        
+    Returns:
+        A list of LangChain tools.
+    """
+    # Get standard Pica tools
+    pica_tools = create_pica_tools(client)
+    
+    # Get MCP tools if available
+    mcp_tools = client.get_mcp_tools() if hasattr(client, 'get_mcp_tools') else []
+    
+    # Combine all tools
+    return pica_tools + mcp_tools
+
+
 def create_pica_agent(
     client: PicaClient,
     llm: Union[BaseLLM, BaseChatModel],
@@ -63,12 +83,11 @@ def create_pica_agent(
     import asyncio
     
     # Create default Pica tools
-    pica_tools = create_pica_tools(client)
+    all_tools = get_tools_from_client(client)
     
     # Combine default tools with any user-provided tools
-    all_tools = pica_tools
     if tools:
-        all_tools = pica_tools + tools
+        all_tools = all_tools + tools
     
     # Generate system prompt with Pica information
     if system_prompt:
