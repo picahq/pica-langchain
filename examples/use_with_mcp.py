@@ -42,7 +42,7 @@ def get_env_var(name: str) -> str:
 
 async def main():
     try:
-        pica_client = PicaClient(
+        pica_client = await PicaClient.create(
             secret=get_env_var("PICA_SECRET"),
             options=PicaClientOptions(
                 mcp_options=mcp_options,

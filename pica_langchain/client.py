@@ -86,11 +86,12 @@ class PicaClient:
             logger.debug("Initializing MCP client with provided options")
             mcp_options = MCPClientOptions(servers=options.mcp_options)
             self.mcp_client = PicaMCPClient(options=mcp_options)        
-        
-        self.initialize()
-    
+
     def initialize(self) -> None:
-        """Initialize the client by fetching connections and available connectors."""
+        """
+        Synchronously initialize the client by fetching connections and available connectors.
+        Does not initialize MCP client which requires async.
+        """
         if self._initialized:
             logger.debug("Client already initialized, skipping initialization")
             return
@@ -154,21 +155,45 @@ class PicaClient:
                 available_platforms_info
             )
 
-        # Initialize MCP client if available
-        if self.mcp_client:
-            logger.info("Initializing MCP client")
-            try:
-                import asyncio
-                self.mcp_tools = asyncio.run(self.mcp_client.initialize())
-                logger.info(f"Loaded {len(self.mcp_tools)} tools from MCP servers")
-            except Exception as e:
-                logger.error(f"Error initializing MCP client: {e}")            
-
         logger.info(f"authkit supported platform = {self._authkit_supported_platforms}")
         logger.info(f"connections_info = {connections_info}")
         logger.info(f"available_platforms_info = {available_platforms_info}")
         self._initialized = True
         logger.info("Pica client initialization complete")
+        
+    
+    async def async_initialize(self) -> None:
+        """
+        Asynchronously initialize the client including MCP client.
+        """
+        # First do the synchronous initialization if not already done
+        if not self._initialized:
+            # Initialize everything except MCP
+            self.initialize()
+
+        if self.mcp_client:
+            logger.info("Initializing MCP client")
+            try:
+                self.mcp_tools = await self.mcp_client.initialize()
+                logger.info(f"Loaded {len(self.mcp_tools)} tools from MCP servers")
+            except Exception as e:
+                logger.error(f"Error initializing MCP client: {e}")
+
+    @classmethod
+    async def create(cls, secret: str, options: Optional[PicaClientOptions] = None):
+        """
+        Factory method to create and initialize a PicaClient with async support.
+        
+        Args:
+            secret: The API secret for Pica.
+            options: Optional configuration parameters.
+            
+        Returns:
+            An initialized PicaClient instance.
+        """
+        client = cls(secret, options)
+        await client.async_initialize()
+        return client
     
     def _initialize_connections(self) -> None:
         """Fetch connections from the API."""
