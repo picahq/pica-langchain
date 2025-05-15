@@ -269,10 +269,6 @@ class PicaClientOptions(BaseModel):
         default=False,
         description="Whether to use the AuthKit integration which enables the promptToConnectPlatform tool"
     )
-    authkit_supported_platforms: List[str] = Field(
-        default_factory=list,
-        description="List of platform identifiers to include in the available platforms list for AuthKit. Use empty list to include all platforms."
-    )    
     mcp_options: Optional[Dict[str, Any]] = Field(
         default=None,
         description="MCP server configuration options. Dictionary with server names as keys and configuration as values."
