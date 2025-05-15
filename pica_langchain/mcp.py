@@ -201,10 +201,22 @@ async def connect_to_single_server(server_config: Dict[str, Any]) -> List[BaseTo
         if not url:
             raise ValueError("URL is required for SSE transport")
 
-        async with sse_client(url) as (read, write):
-            async with ClientSession(read, write) as session:
-                await session.initialize()
-                return await load_mcp_tools(session)
+        try:
+            async def execute_tool():
+                async with sse_client(url) as (read, write):
+                    async with ClientSession(read, write) as session:
+                        await session.initialize()
+                        tools = await load_mcp_tools(session)
+                        tool_names = [tool.name for tool in tools]
+                        logger.info(f"Loaded tools: {tool_names}")
+                        return tools
+
+            return await asyncio.wait_for(execute_tool(), timeout=10)  # 10 second timeout
+
+        except asyncio.TimeoutError:
+            error_msg = f"Timeout while connecting to MCP server: {server_config.get('name', 'unknown')}"
+            logger.error(error_msg)
+            return []
 
     elif transport == "streamable_http":
         url = server_config.get("url")
@@ -212,10 +224,22 @@ async def connect_to_single_server(server_config: Dict[str, Any]) -> List[BaseTo
         if not url:
             raise ValueError("URL is required for streamable HTTP transport")
 
-        async with streamablehttp_client(url) as (read, write, _):
-            async with ClientSession(read, write) as session:
-                await session.initialize()
-                return await load_mcp_tools(session)
+        try:
+            async def execute_tool():
+                async with streamablehttp_client(url) as (read, write, _):
+                    async with ClientSession(read, write) as session:
+                        await session.initialize()
+                        tools = await load_mcp_tools(session)
+                        tool_names = [tool.name for tool in tools]
+                        logger.info(f"Loaded tools: {tool_names}")
+                        return tools
+
+            return await asyncio.wait_for(execute_tool(), timeout=10)  # 10 second timeout
+
+        except asyncio.TimeoutError:
+            error_msg = f"Timeout while connecting to MCP server: {server_config.get('name', 'unknown')}"
+            logger.error(error_msg)
+            return []
 
     else:
         raise ValueError(f"Unsupported transport: {transport}")
@@ -277,30 +301,48 @@ class SessionAwareMCPToolWrapper(BaseTool):
                 
                 if not url:
                     raise ValueError("URL is required for SSE transport")
+                
+                try:
+                    async def execute_tool():
+                        async with sse_client(url) as (read, write):
+                            async with ClientSession(read, write) as session:
+                                await session.initialize()
+                                arguments = kwargs
+                                logger.debug(f"Calling {self.func_name} with arguments: {arguments}")
+                                result = await session.call_tool(self.func_name, arguments)
+                                logger.info(f"Tool execution successful, result: {result}")
+                                return result
                     
-                async with sse_client(url) as (read, write):
-                    async with ClientSession(read, write) as session:
-                        await session.initialize()
-                        arguments = kwargs
-                        logger.debug(f"Calling {self.func_name} with arguments: {arguments}")
-                        result = await session.call_tool(self.func_name, arguments)
-                        logger.info(f"Tool execution successful, result: {result}")
-                        return result
+                    return await asyncio.wait_for(execute_tool(), timeout=10)  # 10 second timeout
+                    
+                except asyncio.TimeoutError:
+                    error_msg = f"Timeout while executing MCP tool {self.name}"
+                    logger.error(error_msg)
+                    return error_msg
                         
             elif transport == "streamable_http":
                 url = self.server_config.get("url")
                 
                 if not url:
                     raise ValueError("URL is required for streamable HTTP transport")
+                
+                try:
+                    async def execute_tool():
+                        async with streamablehttp_client(url) as (read, write, _):
+                            async with ClientSession(read, write) as session:
+                                await session.initialize()
+                                arguments = kwargs
+                                logger.debug(f"Calling {self.func_name} with arguments: {arguments}")
+                                result = await session.call_tool(self.func_name, arguments)
+                                logger.info(f"Tool execution successful, result: {result}")
+                                return result
                     
-                async with streamablehttp_client(url) as (read, write, _):
-                    async with ClientSession(read, write) as session:
-                        await session.initialize()
-                        arguments = kwargs
-                        logger.debug(f"Calling {self.func_name} with arguments: {arguments}")
-                        result = await session.call_tool(self.func_name, arguments)
-                        logger.info(f"Tool execution successful, result: {result}")
-                        return result
+                    return await asyncio.wait_for(execute_tool(), timeout=10)  # 10 second timeout
+                    
+                except asyncio.TimeoutError:
+                    error_msg = f"Timeout while executing MCP tool {self.name}"
+                    logger.error(error_msg)
+                    return error_msg
             else:
                 raise ValueError(f"Unsupported transport: {transport}")
                 

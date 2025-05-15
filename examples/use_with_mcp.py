@@ -22,11 +22,10 @@ mcp_options = {
         "args": ["./examples/mcp_server/math_server.py"],
         "transport": "stdio",
     },
-    # Uncomment to use a weather server if you have one running
-    # "weather": {
-    #     "url": "http://localhost:8000/sse",
-    #     "transport": "sse",
-    # }
+    "weather": {
+        "url": "http://0.0.0.0:8000/sse",
+        "transport": "sse",
+    }
 }
 
 def get_env_var(name: str) -> str:
@@ -59,7 +58,6 @@ async def main():
             client=pica_client,
             llm=llm,
             agent_type=AgentType.OPENAI_FUNCTIONS,
-            system_prompt="Always start your response with `Pica works like ✨\n`",  # Optional: Custom system prompt to append
         )
 
         import signal
@@ -73,7 +71,7 @@ async def main():
 
 
         result = await agent.ainvoke(
-            {"input": ("First, calculate 25 * 17, then check what platforms I have access to.")}
+            {"input": ("First, calculate 25 * 17, then check weather in New York.")}
         )
 
         print(f"\nWorkflow Result:\n {result}")
