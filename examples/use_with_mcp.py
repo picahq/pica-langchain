@@ -11,10 +11,6 @@ from langchain.agents import AgentType
 from pica_langchain import PicaClient, create_pica_agent
 from pica_langchain.models import PicaClientOptions
 
-# Set your API keys
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-PICA_API_KEY = os.environ.get("PICA_API_KEY")
-
 # Configure MCP servers
 mcp_options = {
     "math": {
@@ -40,45 +36,39 @@ def get_env_var(name: str) -> str:
 
 
 async def main():
-    try:
-        pica_client = await PicaClient.create(
-            secret=get_env_var("PICA_SECRET"),
-            options=PicaClientOptions(
-                mcp_options=mcp_options,
-            ),
-        )
+    pica_client = await PicaClient.create(
+        secret=get_env_var("PICA_SECRET"),
+        options=PicaClientOptions(
+            mcp_options=mcp_options,
+        ),
+    )
 
-        llm = ChatOpenAI(
-            temperature=0,
-            model="gpt-4o",
-        )
+    llm = ChatOpenAI(
+        temperature=0,
+        model="gpt-4o",
+    )
 
-        # Create an agent with Pica tools
-        agent = create_pica_agent(
-            client=pica_client,
-            llm=llm,
-            agent_type=AgentType.OPENAI_FUNCTIONS,
-        )
+    # Create an agent with Pica tools
+    agent = create_pica_agent(
+        client=pica_client,
+        llm=llm,
+        agent_type=AgentType.OPENAI_FUNCTIONS,
+    )
 
-        import signal
+    import signal
 
-        def handle_sigterm(*args):
-            print("\nReceived shutdown signal. Cleaning up...")
-            sys.exit(0)
-            
-        signal.signal(signal.SIGTERM, handle_sigterm)
-        signal.signal(signal.SIGINT, handle_sigterm)
+    def handle_sigterm(*args):
+        print("\nReceived shutdown signal. Cleaning up...")
+        sys.exit(0)
+        
+    signal.signal(signal.SIGTERM, handle_sigterm)
+    signal.signal(signal.SIGINT, handle_sigterm)
 
+    result = await agent.ainvoke(
+        {"input": ("First, calculate 25 * 17, then check weather in New York, finally list all connectors Pica supported")}
+    )
 
-        result = await agent.ainvoke(
-            {"input": ("First, calculate 25 * 17, then check weather in New York, finally list all connectors Pica supported")}
-        )
-
-        print(f"\nWorkflow Result:\n {result}")
-
-    except Exception as e:
-        print(f"ERROR: An unexpected error occurred: {e}")
-        sys.exit(1)
+    print(f"\nWorkflow Result:\n {result}")
 
 
 if __name__ == "__main__":
