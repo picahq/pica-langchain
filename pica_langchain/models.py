@@ -269,7 +269,10 @@ class PicaClientOptions(BaseModel):
         default=False,
         description="Whether to use the AuthKit integration which enables the promptToConnectPlatform tool"
     )
-    
+    mcp_options: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="MCP server configuration options. Dictionary with server names as keys and configuration as values."
+    )    
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True

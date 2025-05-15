@@ -2,14 +2,19 @@
 Default system prompt for the Pica LangChain integration.
 """
 
-def get_default_system_prompt(connections_info: str, available_platforms_info: str = "") -> str:
+
+def get_default_system_prompt(
+    connections_info: str,
+    available_platforms_info: str = "",
+    mcp_tools_info: str = "",
+) -> str:
     """
     Generate the default system prompt with connection information.
-    
+
     Args:
         connections_info: Information about available connections.
         available_platforms_info: Information about available platforms.
-        
+
     Returns:
         The formatted system prompt.
     """
@@ -91,9 +96,14 @@ WORKFLOW (MUST FOLLOW THIS ORDER FOR EACH PLATFORM):
   c. NEXT: Call getActionKnowledge to get full details
   d. NEXT: Verify that the connection exists in the available connections list below in the IMPORTANT GUIDELINES section
   e. FINALLY: Execute with proper parameters
-  f. Only after completing all steps, consider if another platform is needed
+  f. Only after completing all steps, consider if another platform is needed  
 
-2. Knowledge Parsing:
+2. For MCP tool requests:
+  a. Identify if the request can be fulfilled by one of the available MCP tools
+  b. If yes, use the MCP tool directly without going through the platform workflow
+  c. You can identify MCP tools by examining the list of available MCP tools below
+
+3. Knowledge Parsing:
   - After getting knowledge, analyze it to understand:
     * Required data fields and their format
     * Required path variables
@@ -105,7 +115,7 @@ WORKFLOW (MUST FOLLOW THIS ORDER FOR EACH PLATFORM):
     * Cannot be determined automatically
   - Important: Do not read the knowledge documentation to the user, just use it to guide your actions
 
-3. Error Prevention:
+4. Error Prevention:
   - Never try to execute without first listing actions
   - Never assume action IDs - they must come from getAvailableActions
   - Never switch platforms mid-flow - complete the current platform first
@@ -114,6 +124,7 @@ WORKFLOW (MUST FOLLOW THIS ORDER FOR EACH PLATFORM):
 
 Best Practices:
 - Always start with getAvailableActions - no exceptions
+- For MCP tools, use them directly when appropriate
 - Complete all steps with one platform before moving to another
 - Parse knowledge documentation before asking users for input
 - Use examples from knowledge documentation to guide users
@@ -141,5 +152,8 @@ Available Connections:
 
 Available Platforms:
 {available_platforms_info}
+
+Available MCP Tools:
+{mcp_tools_info}
 """
-    return prompt 
+    return prompt

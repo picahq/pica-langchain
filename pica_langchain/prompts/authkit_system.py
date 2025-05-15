@@ -2,14 +2,19 @@
 AuthKit system prompt for the Pica LangChain integration.
 """
 
-def get_authkit_system_prompt(connections_info: str, available_platforms_info: str = "") -> str:
+
+def get_authkit_system_prompt(
+    connections_info: str,
+    available_platforms_info: str = "",
+    mcp_tools_info: str = "",
+) -> str:
     """
     Generate the AuthKit system prompt with connection information.
-    
+
     Args:
         connections_info: Information about available connections.
         available_platforms_info: Information about available platforms.
-        
+
     Returns:
         The formatted system prompt.
     """
@@ -102,7 +107,12 @@ WORKFLOW (MUST FOLLOW THIS ORDER FOR EACH PLATFORM):
   e. FINALLY: Execute with proper parameters
   f. Only after completing all steps, consider if another platform is needed
 
-2. Knowledge Parsing:
+2. For MCP tool requests:
+  a. Identify if the request can be fulfilled by one of the available MCP tools
+  b. If yes, use the MCP tool directly without going through the platform workflow
+  c. You can identify MCP tools by examining the list of available MCP tools below
+
+3. Knowledge Parsing:
   - After getting knowledge, analyze it to understand:
     * Required data fields and their format
     * Required path variables
@@ -114,9 +124,9 @@ WORKFLOW (MUST FOLLOW THIS ORDER FOR EACH PLATFORM):
     * Cannot be determined automatically
   - Important: Do not read the knowledge documentation to the user, just use it to guide your actions
 
-3. Error Prevention:
+4. Error Prevention:
   - Never try to execute without first listing actions
-  - Never assume action IDs - they must come from GetAvailableActionsTool
+  - Never assume action IDs - they must come from getAvailableActions
   - Never switch platforms mid-flow - complete the current platform first
   - Validate all input against knowledge documentation
   - Provide clear, actionable error messages
@@ -150,6 +160,9 @@ IMPORTANT GUIDELINES:
 - Here are the proper platform names (according to Pica) to use for tools:
 {available_platforms_info}
 
+- Available MCP Tools:
+{mcp_tools_info}
+
 *****************************************************************
 !!! CRITICAL - PLATFORM IDENTIFIERS - DO NOT IGNORE THIS SECTION !!!
 
@@ -169,4 +182,4 @@ This is especially critical when calling the PromptToConnectPlatformTool - you m
 Failure to use the correct platform identifier will cause your API calls to fail.
 *****************************************************************
 """
-    return prompt 
+    return prompt

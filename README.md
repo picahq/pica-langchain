@@ -110,7 +110,58 @@ agent = initialize_agent(
 result = agent.run("What actions are available in Gmail?")
 print(result)
 ```
+### Using Model Context Protocol (MCP) Tools
 
+The SDK supports integration with [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers, allowing you to connect to external tool providers via the MCP protocol.
+
+```python
+import asyncio
+from langchain.agents import AgentType
+from langchain_openai import ChatOpenAI
+from pica_langchain import PicaClient, create_pica_agent
+from pica_langchain.models import PicaClientOptions
+
+# Configure MCP servers
+mcp_options = {
+    "math": {
+        "command": "python",
+        "args": ["./path/to/math_server.py"],
+        "transport": "stdio",
+    },
+    "weather": {
+        "url": "http://localhost:8000/sse",
+        "transport": "sse",
+    }
+}
+
+async def main():
+    # Create client with async initialization
+    pica_client = await PicaClient.create(
+        secret="your-pica-secret",
+        options=PicaClientOptions(
+            connectors=["*"],  # Initialize all available connections
+            mcp_options=mcp_options,  # Add MCP server options
+        ),
+    )
+
+    # Create an agent with both Pica and MCP tools
+    llm = ChatOpenAI(temperature=0, model="gpt-4o")
+    agent = create_pica_agent(
+        client=pica_client,
+        llm=llm,
+        agent_type=AgentType.OPENAI_FUNCTIONS,
+    )
+
+    # Use both Pica platform actions and MCP tools
+    result = await agent.ainvoke({
+        "input": "Calculate 25 * 17, then check the weather in New York, finally list all connectors Pica supported"
+    })
+    
+    print(result["output"])
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
 
 ## Development
 
