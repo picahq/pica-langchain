@@ -25,7 +25,6 @@ __all__ = [
     "PromptToConnectPlatformTool",
     "create_pica_tools",
     "create_pica_agent",
-    "connect_to_single_server",    
     "get_tools_from_client",
     "Connection",
     "ConnectionDefinition",
