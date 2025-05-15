@@ -71,7 +71,7 @@ async def main():
 
 
         result = await agent.ainvoke(
-            {"input": ("First, calculate 25 * 17, then check weather in New York.")}
+            {"input": ("First, calculate 25 * 17, then check weather in New York, finally list all connectors Pica supported")}
         )
 
         print(f"\nWorkflow Result:\n {result}")
