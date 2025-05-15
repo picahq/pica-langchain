@@ -6,7 +6,6 @@ This example shows how to properly handle the system prompt in an async environm
 import os
 import sys
 import asyncio
-from typing import List, Dict, Any
 
 from langchain_openai import ChatOpenAI
 from langchain.agents import AgentType
