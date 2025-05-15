@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional, ClassVar
+from typing import Dict, Any, Optional, ClassVar, List
 from langchain.tools import BaseTool
 from langchain.callbacks.manager import (
     AsyncCallbackManagerForToolRun,

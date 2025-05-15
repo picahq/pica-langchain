@@ -62,6 +62,16 @@ async def main():
             system_prompt="Always start your response with `Pica works like ✨\n`",  # Optional: Custom system prompt to append
         )
 
+        import signal
+
+        def handle_sigterm(*args):
+            print("\nReceived shutdown signal. Cleaning up...")
+            sys.exit(0)
+            
+        signal.signal(signal.SIGTERM, handle_sigterm)
+        signal.signal(signal.SIGINT, handle_sigterm)
+
+
         result = await agent.ainvoke(
             {"input": ("First, calculate 25 * 17, then check what platforms I have access to.")}
         )
