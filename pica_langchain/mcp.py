@@ -71,7 +71,6 @@ class PicaMCPClient:
             # Add detailed logging for each tool
             for tool in self._tools:
                 logger.info(f"Loaded MCP tool: {tool.name} - {tool.description}")
-                logger.debug(f"Tool schema: {tool.parameter_schema}")
             
             logger.info(f"Loaded {len(self._tools)} wrapped MCP tools")
             return self._tools
@@ -100,7 +99,6 @@ class PicaMCPClient:
                 
                 for tool in tools:
                     # Get parameter schema in a safe way that handles different versions
-                    param_schema = {}
                     if hasattr(tool, 'args_schema'):
                         schema_obj = tool.args_schema
                         # Try different methods to get the schema

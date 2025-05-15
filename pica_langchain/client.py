@@ -96,6 +96,20 @@ class PicaClient:
             logger.debug("Client already initialized, skipping initialization")
             return
         
+        # Initialize connections and definitions
+        self._initialize_connections_and_definitions()
+        
+        # Generate system prompt without MCP tools info
+        self._generate_system_prompt()
+        
+        if self.mcp_client:
+            logger.warning("MCP client initialization requires async context. Call async_initialize() after creating the client.")
+        
+        self._initialized = True
+        logger.info("Pica client initialization complete (MCP client not initialized)")
+    
+    def _initialize_connections_and_definitions(self) -> None:
+        """Initialize connections and connection definitions."""
         logger.info("Initializing Pica client connections and definitions")
         
         if self._connectors_filter and "*" in self._connectors_filter:
@@ -111,6 +125,34 @@ class PicaClient:
         
         self._initialize_connection_definitions()
         
+        logger.debug("Connections and definitions initialized")        
+    
+    async def async_initialize(self) -> None:
+        """
+        Asynchronously initialize the client including MCP client.
+        """
+        # First do the synchronous initialization if not already done
+        if not self._initialized:
+            # Initialize everything except MCP and system prompt generation
+            self._initialize_connections_and_definitions()
+        
+        # Initialize MCP client if available
+        if self.mcp_client:
+            logger.info("Initializing MCP client")
+            try:
+                self.mcp_tools = await self.mcp_client.initialize()
+                logger.info(f"Loaded {len(self.mcp_tools)} tools from MCP servers")
+            except Exception as e:
+                logger.error(f"Error initializing MCP client: {e}")
+        
+        # Now generate the system prompt with MCP tools info
+        self._generate_system_prompt()
+        
+        self._initialized = True
+        logger.info("Pica client initialization complete")
+
+    def _generate_system_prompt(self) -> None:
+        """Generate the system prompt with all necessary information including MCP tools."""
         filtered_connections = [conn for conn in self.connections if conn.active]
         logger.debug(f"Found {len(filtered_connections)} active connections")
         
@@ -143,41 +185,50 @@ class PicaClient:
             f"{def_.platform} ({def_.name})"
             for def_ in self.connection_definitions
         ])
+
+        # Generate MCP tools info if available
+        mcp_tools_info = ""
+        if self.mcp_tools:
+            mcp_tools_list = []
+            for tool in self.mcp_tools:
+                # Format each tool with its name, description, and parameters
+                params_info = ""
+                if hasattr(tool, 'parameter_schema') and tool.parameter_schema:
+                    required_params = tool.parameter_schema.get('required', [])
+                    properties = tool.parameter_schema.get('properties', {})
+                    
+                    param_details = []
+                    for param_name, param_info in properties.items():
+                        is_required = param_name in required_params
+                        param_type = param_info.get('type', 'unknown')
+                        param_desc = param_info.get('description', '')
+                        
+                        if is_required:
+                            param_details.append(f"{param_name} ({param_type}, REQUIRED): {param_desc}")
+                        else:
+                            param_details.append(f"{param_name} ({param_type}, optional): {param_desc}")
+                    
+                    if param_details:
+                        params_info = "\n    Parameters:\n    - " + "\n    - ".join(param_details)
+                
+                mcp_tools_list.append(f"- {tool.name}: {tool.description}{params_info}")
+            
+            mcp_tools_info = "\n".join(mcp_tools_list)
         
         if self._use_authkit:
             self._system_prompt = get_authkit_system_prompt(
                 connections_info, 
-                available_platforms_info
+                available_platforms_info,
+                mcp_tools_info
             )
         else:
             self._system_prompt = get_default_system_prompt(
                 connections_info, 
-                available_platforms_info
+                available_platforms_info,
+                mcp_tools_info
             )
 
-        logger.info(f"authkit supported platform = {self._authkit_supported_platforms}")
-        logger.info(f"connections_info = {connections_info}")
-        logger.info(f"available_platforms_info = {available_platforms_info}")
-        self._initialized = True
-        logger.info("Pica client initialization complete")
-        
-    
-    async def async_initialize(self) -> None:
-        """
-        Asynchronously initialize the client including MCP client.
-        """
-        # First do the synchronous initialization if not already done
-        if not self._initialized:
-            # Initialize everything except MCP
-            self.initialize()
-
-        if self.mcp_client:
-            logger.info("Initializing MCP client")
-            try:
-                self.mcp_tools = await self.mcp_client.initialize()
-                logger.info(f"Loaded {len(self.mcp_tools)} tools from MCP servers")
-            except Exception as e:
-                logger.error(f"Error initializing MCP client: {e}")
+        logger.info(f"System prompt generated with MCP tools info")
 
     @classmethod
     async def create(cls, secret: str, options: Optional[PicaClientOptions] = None):
@@ -426,6 +477,25 @@ class PicaClient:
                 for action in all_actions
             ]
             
+            # Include relevant MCP tools based on a generic matching approach
+            # This is a more dynamic approach that doesn't rely on hardcoded platform names
+            if self.mcp_tools:
+                platform_terms = platform.lower().split()
+                platform_terms.append(platform.lower())  # Add the full platform name as well
+                
+                # Find any MCP tools that might match the platform name or related terms
+                for tool in self.mcp_tools:
+                    tool_name = tool.name.lower()
+                    tool_desc = tool.description.lower() if hasattr(tool, 'description') else ""
+                    
+                    # Check if any platform term appears in the tool name or description
+                    if any(term in tool_name or term in tool_desc for term in platform_terms):
+                        simplified_actions.append({
+                            "_id": f"mcp_{tool.name}",
+                            "title": tool.name,
+                            "tags": ["MCP", "Tool"]
+                        })
+
             logger.info(f"Found {len(simplified_actions)} available actions for {platform}")
             return ActionsResponse(
                 success=True,
