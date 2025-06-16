@@ -182,23 +182,25 @@ class PicaClient:
             for tool in self.mcp_tools:
                 # Format each tool with its name, description, and parameters
                 params_info = ""
-                if hasattr(tool, 'parameter_schema') and tool.parameter_schema:
-                    required_params = tool.parameter_schema.get('required', [])
-                    properties = tool.parameter_schema.get('properties', {})
-                    
-                    param_details = []
-                    for param_name, param_info in properties.items():
-                        is_required = param_name in required_params
-                        param_type = param_info.get('type', 'unknown')
-                        param_desc = param_info.get('description', '')
+                if hasattr(tool, 'parameter_schema'):
+                    schema = getattr(tool, 'parameter_schema')
+                    if schema:
+                        required_params = schema.get('required', [])
+                        properties = schema.get('properties', {})
                         
-                        if is_required:
-                            param_details.append(f"{param_name} ({param_type}, REQUIRED): {param_desc}")
-                        else:
-                            param_details.append(f"{param_name} ({param_type}, optional): {param_desc}")
-                    
-                    if param_details:
-                        params_info = "\n    Parameters:\n    - " + "\n    - ".join(param_details)
+                        param_details = []
+                        for param_name, param_info in properties.items():
+                            is_required = param_name in required_params
+                            param_type = param_info.get('type', 'unknown')
+                            param_desc = param_info.get('description', '')
+                            
+                            if is_required:
+                                param_details.append(f"{param_name} ({param_type}, REQUIRED): {param_desc}")
+                            else:
+                                param_details.append(f"{param_name} ({param_type}, optional): {param_desc}")
+                        
+                        if param_details:
+                            params_info = "\n    Parameters:\n    - " + "\n    - ".join(param_details)
                 
                 mcp_tools_list.append(f"- {tool.name}: {tool.description}{params_info}")
             
