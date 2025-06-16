@@ -38,6 +38,7 @@ class PicaClient:
             options: Optional configuration parameters.
                 - server_url: Custom server URL to use instead of the default.
                 - connectors: List of connector keys to filter by.
+                - actions: List of action IDs to filter by. Default is all actions.
                 - identity: Filter connections by specific identity ID.
                 - identity_type: Filter connections by identity type (user, team, organization, or project).
                 - authkit: Whether to use the AuthKit integration which enables the promptToConnectPlatform tool.
@@ -77,6 +78,10 @@ class PicaClient:
             self._system_prompt = get_authkit_system_prompt("Loading connections...")
         else:
             self._system_prompt = get_default_system_prompt("Loading connections...")
+        
+        self._actions_filter = options.actions
+        if self._actions_filter:
+            logger.debug(f"Filtering actions by IDs: {self._actions_filter}")
 
         self.mcp_client = None
         self.mcp_tools = []
@@ -459,14 +464,37 @@ class PicaClient:
             logger.info(f"Fetching available actions for platform: {platform}")
             all_actions = self.get_all_available_actions(platform)
             
-            simplified_actions = [
-                {
-                    "_id": action._id if action._id else action.model_dump().get("_id"),
-                    "title": action.title,
-                    "tags": action.tags
-                }
-                for action in all_actions
-            ]
+            # Filter actions by IDs if actions filter is provided
+            if self._actions_filter:
+                logger.debug(f"Filtering actions by IDs: {self._actions_filter}")
+                actions_filter_set = set(self._actions_filter)
+                filtered_actions = []
+                
+                for action in all_actions:
+                    action_id = self._extract_action_id(action)
+                    if action_id and action_id in actions_filter_set:
+                        filtered_actions.append(action)
+                
+                all_actions = filtered_actions
+                logger.info(f"After filtering, {len(all_actions)} actions remain")
+            
+            # Create simplified action representations
+            simplified_actions = []
+            for action in all_actions:
+                try:
+                    action_id = self._extract_action_id(action)
+                    if not action_id:
+                        logger.warning(f"Skipping action without valid ID: {action.title}")
+                        continue
+                        
+                    simplified_actions.append({
+                        "_id": action_id,
+                        "title": action.title or "Untitled Action",
+                        "tags": action.tags or []
+                    })
+                except Exception as e:
+                    logger.warning(f"Error processing action {getattr(action, 'title', 'Unknown')}: {e}")
+                    continue
             
             # Include relevant MCP tools based on a generic matching approach
             # This is a more dynamic approach that doesn't rely on hardcoded platform names
@@ -542,6 +570,25 @@ class PicaClient:
             List of LangChain tools from MCP servers.
         """
         return self.mcp_tools    
+
+    def _extract_action_id(self, action: AvailableAction) -> Optional[str]:
+        """
+        Extract the action ID from an AvailableAction object.
+        
+        Args:
+            action: The AvailableAction object.
+            
+        Returns:
+            The action ID or None if not found.
+        """
+        if hasattr(action, '_id') and action._id:
+            return action._id
+        
+        try:
+            action_dict = action.model_dump()
+            return action_dict.get("_id")
+        except Exception:
+            return None
 
     def _replace_path_variables(
         self, 

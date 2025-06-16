@@ -257,6 +257,10 @@ class PicaClientOptions(BaseModel):
         default_factory=list,
         description="List of connector keys to filter by. Use [\"*\"] to initialize all connections."
     )
+    actions: Optional[List[str]] = Field(
+        default=None,
+        description="List of action ids to filter by. Default is all actions."
+    )
     identity: Optional[str] = Field(
         default=None,
         description="Filter connections by specific identity ID"

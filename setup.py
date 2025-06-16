@@ -17,6 +17,8 @@ setup(
             "black==25.1.0",
             "isort==6.0.1",
             "mypy==1.15.0",
+            "mcp>=1.0.0",
+            "langchain-mcp-adapters>=0.1.0",
         ],
     },
     python_requires=">=3.8",

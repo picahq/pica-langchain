@@ -25,12 +25,18 @@ def get_env_var(name: str) -> str:
 
 def main():
     try:
+        # Create an agent with access to only the Send Email action from Gmail
         pica_client = PicaClient(
             secret=get_env_var("PICA_SECRET"),
             options=PicaClientOptions(
-                connectors=["*"], # Initialize all available connections for this example
+                connectors=["my-gmail-connector-key"],
+                actions=[
+                    "conn_mod_def::F_JeJ_A_TKg::cc2kvVQQTiiIiLEDauy6zQ"
+                ]
             )
         )
+
+        pica_client.initialize()
         
         llm_with_handler = ChatOpenAI(
             temperature=0,
@@ -46,9 +52,10 @@ def main():
         )
 
         for chunk in agent_with_handler.stream({
-            "input": "List all platforms available in Pica."
+            "input": "What actions do I have access to with Gmail?"
         }):
-            print(chunk)
+            if 'output' in chunk:
+                print(chunk['output'])
         
     except Exception as e:
         print(f"ERROR: An unexpected error occurred: {e}")

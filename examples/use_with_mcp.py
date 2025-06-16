@@ -45,7 +45,7 @@ async def main():
 
     llm = ChatOpenAI(
         temperature=0,
-        model="gpt-4o",
+        model="gpt-4.1",
     )
 
     # Create an agent with Pica tools

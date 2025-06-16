@@ -244,7 +244,7 @@ async def connect_to_single_server(server_config: Dict[str, Any]) -> List[BaseTo
 
 
 class SessionAwareMCPToolWrapper(BaseTool):
-    name: str
+    name: str = ""
     description: str
     server_config: Dict[str, Any]
     func_name: str
