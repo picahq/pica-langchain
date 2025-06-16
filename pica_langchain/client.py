@@ -39,6 +39,7 @@ class PicaClient:
                 - server_url: Custom server URL to use instead of the default.
                 - connectors: List of connector keys to filter by.
                 - actions: List of action IDs to filter by. Default is all actions.
+                - permissions: Permission level to filter actions by. 'read' allows GET only, 'write' allows POST/PUT/PATCH, 'admin' allows all methods.
                 - identity: Filter connections by specific identity ID.
                 - identity_type: Filter connections by identity type (user, team, organization, or project).
                 - authkit: Whether to use the AuthKit integration which enables the promptToConnectPlatform tool.
@@ -82,6 +83,10 @@ class PicaClient:
         self._actions_filter = options.actions
         if self._actions_filter:
             logger.debug(f"Filtering actions by IDs: {self._actions_filter}")
+        
+        self._permissions_filter = options.permissions
+        if self._permissions_filter:
+            logger.debug(f"Filtering actions by permissions: {self._permissions_filter}")
 
         self.mcp_client = None
         self.mcp_tools = []
@@ -476,7 +481,29 @@ class PicaClient:
                         filtered_actions.append(action)
                 
                 all_actions = filtered_actions
-                logger.info(f"After filtering, {len(all_actions)} actions remain")
+                logger.info(f"After filtering by IDs, {len(all_actions)} actions remain")
+            
+            # Filter actions by permissions if permissions filter is provided
+            if self._permissions_filter:
+                logger.debug(f"Filtering actions by permissions: {self._permissions_filter}")
+                filtered_by_permissions = []
+                
+                if self._permissions_filter == "read":
+                    for action in all_actions:
+                        method = action.method
+                        if method and method.upper() == "GET":
+                            filtered_by_permissions.append(action)
+                elif self._permissions_filter == "write":
+                    for action in all_actions:
+                        method = action.method
+                        if method and method.upper() in ["POST", "PUT", "PATCH"]:
+                            filtered_by_permissions.append(action)
+                # For "admin" or no permissions set, return all actions (no filtering)
+                else:
+                    filtered_by_permissions = all_actions
+                
+                all_actions = filtered_by_permissions
+                logger.info(f"After filtering by permissions ({self._permissions_filter}), {len(all_actions)} actions remain")
             
             # Create simplified action representations
             simplified_actions = []
