@@ -57,6 +57,7 @@ class AvailableAction(BaseModel):
     path: Optional[str] = None
     base_url: Optional[str] = Field(None, alias="baseUrl")
     tags: Optional[List[str]] = Field(default_factory=list)
+    method: Optional[str] = None
     
     model_config = ConfigDict(
         populate_by_name=True,
@@ -256,6 +257,14 @@ class PicaClientOptions(BaseModel):
     connectors: List[str] = Field(
         default_factory=list,
         description="List of connector keys to filter by. Use [\"*\"] to initialize all connections."
+    )
+    actions: Optional[List[str]] = Field(
+        default=None,
+        description="List of action ids to filter by. Default is all actions."
+    )
+    permissions: Optional[Literal["read", "write", "admin"]] = Field(
+        default=None,
+        description="Permission level to filter actions by. 'read' allows GET only, 'write' allows POST/PUT/PATCH, 'admin' allows all methods (default: 'admin')"
     )
     identity: Optional[str] = Field(
         default=None,

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pica-langchain",
-    version="1.3.0",
+    version="1.4.0",
     packages=find_packages(),
     install_requires=[
         "langchain==0.3.20",
@@ -17,6 +17,8 @@ setup(
             "black==25.1.0",
             "isort==6.0.1",
             "mypy==1.15.0",
+            "mcp>=1.0.0",
+            "langchain-mcp-adapters>=0.1.0",
         ],
     },
     python_requires=">=3.8",

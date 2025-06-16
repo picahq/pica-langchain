@@ -38,6 +38,8 @@ class PicaClient:
             options: Optional configuration parameters.
                 - server_url: Custom server URL to use instead of the default.
                 - connectors: List of connector keys to filter by.
+                - actions: List of action IDs to filter by. Default is all actions.
+                - permissions: Permission level to filter actions by. 'read' allows GET only, 'write' allows POST/PUT/PATCH, 'admin' allows all methods.
                 - identity: Filter connections by specific identity ID.
                 - identity_type: Filter connections by identity type (user, team, organization, or project).
                 - authkit: Whether to use the AuthKit integration which enables the promptToConnectPlatform tool.
@@ -77,6 +79,14 @@ class PicaClient:
             self._system_prompt = get_authkit_system_prompt("Loading connections...")
         else:
             self._system_prompt = get_default_system_prompt("Loading connections...")
+        
+        self._actions_filter = options.actions
+        if self._actions_filter:
+            logger.debug(f"Filtering actions by IDs: {self._actions_filter}")
+        
+        self._permissions_filter = options.permissions
+        if self._permissions_filter:
+            logger.debug(f"Filtering actions by permissions: {self._permissions_filter}")
 
         self.mcp_client = None
         self.mcp_tools = []
@@ -182,23 +192,25 @@ class PicaClient:
             for tool in self.mcp_tools:
                 # Format each tool with its name, description, and parameters
                 params_info = ""
-                if hasattr(tool, 'parameter_schema') and tool.parameter_schema:
-                    required_params = tool.parameter_schema.get('required', [])
-                    properties = tool.parameter_schema.get('properties', {})
-                    
-                    param_details = []
-                    for param_name, param_info in properties.items():
-                        is_required = param_name in required_params
-                        param_type = param_info.get('type', 'unknown')
-                        param_desc = param_info.get('description', '')
+                if hasattr(tool, 'parameter_schema'):
+                    schema = getattr(tool, 'parameter_schema')
+                    if schema:
+                        required_params = schema.get('required', [])
+                        properties = schema.get('properties', {})
                         
-                        if is_required:
-                            param_details.append(f"{param_name} ({param_type}, REQUIRED): {param_desc}")
-                        else:
-                            param_details.append(f"{param_name} ({param_type}, optional): {param_desc}")
-                    
-                    if param_details:
-                        params_info = "\n    Parameters:\n    - " + "\n    - ".join(param_details)
+                        param_details = []
+                        for param_name, param_info in properties.items():
+                            is_required = param_name in required_params
+                            param_type = param_info.get('type', 'unknown')
+                            param_desc = param_info.get('description', '')
+                            
+                            if is_required:
+                                param_details.append(f"{param_name} ({param_type}, REQUIRED): {param_desc}")
+                            else:
+                                param_details.append(f"{param_name} ({param_type}, optional): {param_desc}")
+                        
+                        if param_details:
+                            params_info = "\n    Parameters:\n    - " + "\n    - ".join(param_details)
                 
                 mcp_tools_list.append(f"- {tool.name}: {tool.description}{params_info}")
             
@@ -457,14 +469,59 @@ class PicaClient:
             logger.info(f"Fetching available actions for platform: {platform}")
             all_actions = self.get_all_available_actions(platform)
             
-            simplified_actions = [
-                {
-                    "_id": action._id if action._id else action.model_dump().get("_id"),
-                    "title": action.title,
-                    "tags": action.tags
-                }
-                for action in all_actions
-            ]
+            # Filter actions by IDs if actions filter is provided
+            if self._actions_filter:
+                logger.debug(f"Filtering actions by IDs: {self._actions_filter}")
+                actions_filter_set = set(self._actions_filter)
+                filtered_actions = []
+                
+                for action in all_actions:
+                    action_id = self._extract_action_id(action)
+                    if action_id and action_id in actions_filter_set:
+                        filtered_actions.append(action)
+                
+                all_actions = filtered_actions
+                logger.info(f"After filtering by IDs, {len(all_actions)} actions remain")
+            
+            # Filter actions by permissions if permissions filter is provided
+            if self._permissions_filter:
+                logger.debug(f"Filtering actions by permissions: {self._permissions_filter}")
+                filtered_by_permissions = []
+                
+                if self._permissions_filter == "read":
+                    for action in all_actions:
+                        method = action.method
+                        if method and method.upper() == "GET":
+                            filtered_by_permissions.append(action)
+                elif self._permissions_filter == "write":
+                    for action in all_actions:
+                        method = action.method
+                        if method and method.upper() in ["POST", "PUT", "PATCH"]:
+                            filtered_by_permissions.append(action)
+                # For "admin" or no permissions set, return all actions (no filtering)
+                else:
+                    filtered_by_permissions = all_actions
+                
+                all_actions = filtered_by_permissions
+                logger.info(f"After filtering by permissions ({self._permissions_filter}), {len(all_actions)} actions remain")
+            
+            # Create simplified action representations
+            simplified_actions = []
+            for action in all_actions:
+                try:
+                    action_id = self._extract_action_id(action)
+                    if not action_id:
+                        logger.warning(f"Skipping action without valid ID: {action.title}")
+                        continue
+                        
+                    simplified_actions.append({
+                        "_id": action_id,
+                        "title": action.title or "Untitled Action",
+                        "tags": action.tags or []
+                    })
+                except Exception as e:
+                    logger.warning(f"Error processing action {getattr(action, 'title', 'Unknown')}: {e}")
+                    continue
             
             # Include relevant MCP tools based on a generic matching approach
             # This is a more dynamic approach that doesn't rely on hardcoded platform names
@@ -540,6 +597,25 @@ class PicaClient:
             List of LangChain tools from MCP servers.
         """
         return self.mcp_tools    
+
+    def _extract_action_id(self, action: AvailableAction) -> Optional[str]:
+        """
+        Extract the action ID from an AvailableAction object.
+        
+        Args:
+            action: The AvailableAction object.
+            
+        Returns:
+            The action ID or None if not found.
+        """
+        if hasattr(action, '_id') and action._id:
+            return action._id
+        
+        try:
+            action_dict = action.model_dump()
+            return action_dict.get("_id")
+        except Exception:
+            return None
 
     def _replace_path_variables(
         self, 

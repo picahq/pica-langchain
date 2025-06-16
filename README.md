@@ -22,6 +22,8 @@ The `PicaClientOptions` class allows you to configure the Pica client with the f
 | --- | --- | --- | --- | --- |
 | server_url | str | No | https://api.picaos.com | URL for self-hosted Pica server. |
 | connectors | List[str] | No | [] | List of connector keys to filter by. Pass ["*"] to initialize all available connectors, or specific connector keys to filter. If empty, no connections will be initialized. |
+| actions | List[str] | No | None | List of action ids to filter by. Default is all actions. |
+| permissions | Literal["read", "write", "admin"] | No | None | Permission level to filter actions by. 'read' allows GET only, 'write' allows POST/PUT/PATCH, 'admin' allows all methods (default: 'admin') |
 | authkit | bool | No | False | If True, the SDK will use Authkit to connect to prompt the user to connect to a platform that they do not currently have access to |
 | identity | str | No | None | Filter connections by specific identity ID. |
 | identity_type | "user", "team", "organization", or "project" | No | None | Filter connections by identity type. |
@@ -52,15 +54,19 @@ pica_client = PicaClient(
         # identity_type="user"
         # identity="user-id",
         # authkit=True,
-
+        # actions=[""], # Initialize specific action ids (e.g. ["conn_mod_def::F_JeJ_A_TKg::cc2kvVQQTiiIiLEDauy6zQ"])
+        # permissions="read", # Filter actions by permission level
+        
         connectors=["*"] # Initialize all available connections for this example
     )
 )
 
+pica_client.initialize()
+
 # Create a LangChain agent with Pica tools
 llm = ChatOpenAI(
     temperature=0, 
-    model="gpt-4o"
+    model="gpt-4.1"
 )
 
 # Create an agent with Pica tools
@@ -95,11 +101,13 @@ from pica_langchain import PicaClient, create_pica_tools
 # Initialize the Pica client
 pica_client = PicaClient(secret="your-pica-secret")
 
+pica_client.initialize()
+
 # Create Pica tools
 tools = create_pica_tools(pica_client)
 
 # Create a custom agent with the tools
-llm = ChatOpenAI(temperature=0, model="gpt-4o")
+llm = ChatOpenAI(temperature=0, model="gpt-4.1")
 agent = initialize_agent(
     tools,
     llm,
@@ -145,7 +153,7 @@ async def main():
     )
 
     # Create an agent with both Pica and MCP tools
-    llm = ChatOpenAI(temperature=0, model="gpt-4o")
+    llm = ChatOpenAI(temperature=0, model="gpt-4.1")
     agent = create_pica_agent(
         client=pica_client,
         llm=llm,
