@@ -2,13 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="pica-langchain",
-    version="1.4.0",
+    version="1.5.0",
     packages=find_packages(),
     install_requires=[
-        "langchain==0.3.20",
-        "langchain_openai==0.3.8",
-        "pydantic==2.10.6",
-        "requests==2.32.3",
+        "langchain>=0.3.25,<1.0.0",
+        "langchain_openai>=0.3.8,<1.0.0",
+        "pydantic>=2.11.2,<3.0.0",
+        "requests>=2.32.3,<3.0.0",
         "requests-toolbelt>=1.0.0",
     ],
     extras_require={

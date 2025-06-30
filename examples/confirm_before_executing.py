@@ -89,6 +89,8 @@ def main():
             ),
         )
 
+        pica_client.initialize()
+
         callback_handler = CustomCallbackHandler(pica_client)
 
         llm = ChatOpenAI(

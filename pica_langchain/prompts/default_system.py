@@ -65,7 +65,7 @@ Your capabilities must be used in this exact sequence FOR EACH EXECUTION:
   - Tool: GetActionKnowledgeTool
   - Purpose: Fetch full details and knowledge documentation for a specific action
   - When to use: After finding the appropriate action ID from step 1
-  - Required: Must have action ID from getAvailableActions first
+  - Required: Must have action ID from getAvailableActions first (ID Example: 'conn_mod_def::F_JeJ_A_TKg::cc2kvVQQTiiIiLEDauy6zQ')
   - Note: Can be used to explore actions even without a connection
   - Output: Returns complete action object with:
     * Knowledge documentation

@@ -415,6 +415,24 @@ class PicaClient:
             print(f"Error fetching all available actions: {e}")
             raise ValueError("Failed to fetch all available actions")
     
+    def normalize_action_id(self, action_id: str) -> str:
+        """
+        Normalize action ID by adding the conn_mod_def:: prefix if it's missing.
+        
+        Args:
+            action_id: The action ID to normalize.
+            
+        Returns:
+            The normalized action ID with proper prefix.
+        """
+        if not action_id:
+            return action_id
+            
+        if not action_id.startswith("conn_mod_def::"):
+            return f"conn_mod_def::{action_id}"
+            
+        return action_id
+
     def get_single_action(self, action_id: str) -> AvailableAction:
         """
         Get a single action by ID.
@@ -426,8 +444,11 @@ class PicaClient:
             The requested action.
         """
         try:
-            logger.debug(f"Fetching action with ID: {action_id}")
-            params = {"_id": action_id}
+            # Normalize the action ID to ensure it has the proper prefix
+            normalized_action_id = self.normalize_action_id(action_id)
+            logger.debug(f"Fetching action with ID: {normalized_action_id} (original: {action_id})")
+            
+            params = {"_id": normalized_action_id}
             
             log_request_response("GET", self.available_actions_url, request_data=params)
             response = requests.get(
@@ -444,8 +465,8 @@ class PicaClient:
                                 response_data={"rows_count": len(data.get("rows", []))})
             
             if not data.get("rows") or len(data["rows"]) == 0:
-                logger.warning(f"Action with ID {action_id} not found")
-                raise ValueError(f"Action with ID {action_id} not found")
+                logger.warning(f"Action with ID {normalized_action_id} not found")
+                raise ValueError(f"Action with ID {normalized_action_id} not found")
             
             action = AvailableAction(**data["rows"][0])
             logger.debug(f"Successfully fetched action: {action.title}")

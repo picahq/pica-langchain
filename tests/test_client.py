@@ -309,5 +309,22 @@ class TestPicaClient(unittest.TestCase):
         self.assertEqual(client.connection_definitions[0].platform, "gmail")
         self.assertTrue(client.connection_definitions[0].oauth)
 
+    def test_normalize_action_id(self):
+        client = PicaClient("fake-secret")
+        
+        test_cases = [
+            ("conn_mod_def::F_JeJ_A_TKg::cc2kvVQQTiiIiLEDauy6zQ", "conn_mod_def::F_JeJ_A_TKg::cc2kvVQQTiiIiLEDauy6zQ"),
+            ("GCQEQGUVPz4::duqxCkRtSQKWGWb5eFgyLg", "conn_mod_def::GCQEQGUVPz4::duqxCkRtSQKWGWb5eFgyLg"),
+            ("mcp_test_tool", "conn_mod_def::mcp_test_tool"),
+            ("simple_action_id", "conn_mod_def::simple_action_id"),
+            ("action:test", "conn_mod_def::action:test"),
+        ]
+        
+        for input_id, expected_output in test_cases:
+            with self.subTest(input_id=input_id):
+                result = client.normalize_action_id(input_id)
+                self.assertEqual(result, expected_output, 
+                               f"Failed for input '{input_id}': expected '{expected_output}', got '{result}'")
+
 if __name__ == '__main__':
     unittest.main()

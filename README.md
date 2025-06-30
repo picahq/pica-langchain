@@ -152,6 +152,8 @@ async def main():
         ),
     )
 
+    pica_client.initialize()
+
     # Create an agent with both Pica and MCP tools
     llm = ChatOpenAI(temperature=0, model="gpt-4.1")
     agent = create_pica_agent(
