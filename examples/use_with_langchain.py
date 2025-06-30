@@ -34,6 +34,8 @@ def main():
                 connectors=["*"] # Initialize all available connections for this example
             )
         )
+
+        pica_client.initialize()
         
         llm = ChatOpenAI(
             temperature=0,

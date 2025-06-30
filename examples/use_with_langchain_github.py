@@ -29,6 +29,8 @@ def main():
                 connectors=["your-github-connector-key"] # Replace with your GitHub connector key
             )
         )
+
+        pica_client.initialize()
         
         llm = ChatOpenAI(
             temperature=0,

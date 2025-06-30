@@ -39,6 +39,8 @@ async def main():
                 connectors=["*"]
             )
         )
+
+        pica_client.initialize()
         
         # Create an LLM with streaming capability
         llm = ChatOpenAI(
