@@ -139,14 +139,10 @@ class ConnectionDefinition(BaseModel):
     image: Optional[str] = None
     tags: Optional[List[str]] = None
     oauth: Optional[bool] = None
-    created_at: int = Field(alias="createdAt")
-    updated_at: int = Field(alias="updatedAt")
-    updated: bool
     version: str
-    last_modified_by: str = Field(alias="lastModifiedBy")
-    deleted: bool
+    deleted: Optional[bool] = False
+    deprecated: Optional[bool] = None
     active: bool
-    deprecated: bool
     
     model_config = ConfigDict(
         populate_by_name=True,
@@ -167,16 +163,13 @@ class Connection(BaseModel):
     secretsServiceId: Optional[str] = None
     settings: Optional[Dict[str, Any]] = None
     throughput: Optional[Dict[str, Any]] = None
-    created_at: int = Field(alias="createdAt")
-    updated_at: int = Field(alias="updatedAt")
-    updated: bool
+    updated: Optional[bool] = False
     version: str
-    last_modified_by: str = Field(alias="lastModifiedBy")
-    deleted: bool
+    deleted: Optional[bool] = False
     change_log: Optional[List[Dict[str, Any]]] = None
     tags: Optional[List[str]] = None
     active: bool
-    deprecated: bool
+    deprecated: Optional[bool] = None
     
     model_config = ConfigDict(
         populate_by_name=True,
