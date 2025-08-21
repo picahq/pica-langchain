@@ -123,12 +123,11 @@ class PicaClient:
         if self._connectors_filter and "*" in self._connectors_filter:
             logger.debug("Initializing all available connections")
             self._initialize_connections()
-            self._connectors_filter = []
         elif self._connectors_filter:
             logger.debug(f"Initializing specific connections: {self._connectors_filter}")
             self._initialize_connections()
         else:
-            logger.debug("No connections to initialize")
+            logger.debug("No connections to initialize (empty connectors list)")
             self.connections = []
         
         self._initialize_connection_definitions()
@@ -163,13 +162,6 @@ class PicaClient:
         """Generate the system prompt with all necessary information including MCP tools."""
         filtered_connections = [conn for conn in self.connections if conn.active]
         logger.debug(f"Found {len(filtered_connections)} active connections")
-        
-        if self._connectors_filter:
-            filtered_connections = [
-                conn for conn in filtered_connections 
-                if conn.key in self._connectors_filter
-            ]
-            logger.debug(f"After filtering, {len(filtered_connections)} connections remain")
         
         connections_info = (
             "\t* " + "\n\t* ".join([
@@ -259,6 +251,12 @@ class PicaClient:
                 
             if self._identity_type_filter:
                 params["identityType"] = self._identity_type_filter
+            
+            # Add connector keys filter for server-side filtering
+            if self._connectors_filter and "*" not in self._connectors_filter:
+                keys_param = ",".join(self._connectors_filter)
+                params["key"] = keys_param
+                logger.debug(f"Adding key filter parameter: {keys_param}")
             
             try:
                 # Use the pagination method to handle pagination properly
