@@ -252,14 +252,12 @@ class PicaClient:
             if self._identity_type_filter:
                 params["identityType"] = self._identity_type_filter
             
-            # Add connector keys filter for server-side filtering
             if self._connectors_filter and "*" not in self._connectors_filter:
                 keys_param = ",".join(self._connectors_filter)
                 params["key"] = keys_param
                 logger.debug(f"Adding key filter parameter: {keys_param}")
             
             try:
-                # Use the pagination method to handle pagination properly
                 connections_data = self._paginate_results(
                     self.get_connection_url,
                     params=params
@@ -289,7 +287,6 @@ class PicaClient:
                 logger.debug("Adding authkit=true parameter to available connectors request")
             
             try:
-                # Use the pagination method to handle pagination properly
                 connectors_data = self._paginate_results(
                     self.get_available_connectors_url,
                     params=params
