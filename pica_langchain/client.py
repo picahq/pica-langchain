@@ -383,14 +383,57 @@ class PicaClient:
         except Exception as e:
             print(f"Error in pagination: {e}")
             raise
-    
+
+    def _transform_knowledge_api_to_action(self, data: Dict[str, Any]) -> AvailableAction:
+        """
+        Transform knowledge API response format to AvailableAction.
+
+        Knowledge API format uses: _id, connectionPlatform, baseUrl, etc.
+
+        Args:
+            data: Raw action data from knowledge API.
+
+        Returns:
+            AvailableAction instance.
+        """
+        return AvailableAction(**data)
+
+    def _transform_search_api_to_action(self, data: Dict[str, Any]) -> AvailableAction:
+        """
+        Transform search API response format to AvailableAction.
+
+        Search API format uses: systemId (maps to _id), key, etc.
+
+        Args:
+            data: Raw action data from search API.
+
+        Returns:
+            AvailableAction instance.
+        """
+        # Map systemId to _id for compatibility with AvailableAction model
+        transformed = {
+            "_id": data.get("systemId"),
+            "title": data.get("title"),
+            "method": data.get("method"),
+            "path": data.get("path"),
+            "tags": data.get("tags", []),
+            "key": data.get("key"),  # Extra field, allowed by model
+        }
+
+        # Add any other fields that might be present
+        for key, value in data.items():
+            if key not in ["systemId"] and key not in transformed:
+                transformed[key] = value
+
+        return AvailableAction(**transformed)
+
     def get_all_available_actions(self, platform: str) -> List[AvailableAction]:
         """
         Get all available actions for a platform.
-        
+
         Args:
             platform: The platform to get actions for.
-            
+
         Returns:
             A list of available actions.
         """
@@ -399,16 +442,68 @@ class PicaClient:
                 "supported": "true",
                 "connectionPlatform": platform
             }
-            
+
             actions_data = self._paginate_results(
                 self.available_actions_url,
                 params=params
             )
-            
-            return [AvailableAction(**action) for action in actions_data]
+
+            return [self._transform_knowledge_api_to_action(action) for action in actions_data]
         except Exception as e:
             print(f"Error fetching all available actions: {e}")
             raise ValueError("Failed to fetch all available actions")
+
+    def search_available_actions(self, platform: str, query: str, limit: int = 20) -> List[AvailableAction]:
+        """
+        Search for available actions on a platform using vector search.
+
+        Args:
+            platform: The platform to search actions for.
+            query: Descriptive intent phrase (without platform name).
+            limit: Maximum number of results to return (default: 20).
+
+        Returns:
+            A list of relevant available actions.
+        """
+        try:
+            logger.info(f"Searching actions for platform: {platform} with query: {query}")
+
+            search_url = f"{self.base_url}/v1/available-actions/search/{platform}"
+            params = {
+                "query": query,
+                "limit": limit
+            }
+
+            log_request_response("GET", search_url, request_data=params)
+            response = requests.get(
+                search_url,
+                params=params,
+                headers=self._generate_headers()
+            )
+            response.raise_for_status()
+
+            # Search API returns a direct array, not wrapped in an object
+            actions_data = response.json()
+
+            # Validate that we got an array
+            if not isinstance(actions_data, list):
+                logger.error(f"Unexpected response format from search API: {type(actions_data)}")
+                raise ValueError("Search API returned unexpected format")
+
+            log_request_response("GET", search_url,
+                                request_data=params,
+                                response_status=response.status_code,
+                                response_data={"results_count": len(actions_data)})
+
+            # Transform search API format to AvailableAction instances
+            actions = [self._transform_search_api_to_action(action) for action in actions_data]
+
+            logger.info(f"Found {len(actions)} actions for query: {query}")
+            return actions
+        except Exception as e:
+            logger.error(f"Error searching available actions: {e}", exc_info=True)
+            print(f"Error searching available actions: {e}")
+            raise ValueError("Failed to search available actions")
     
     def normalize_action_id(self, action_id: str) -> str:
         """
@@ -471,19 +566,27 @@ class PicaClient:
             print(f"Error fetching single action: {e}")
             raise ValueError("Failed to fetch action")
     
-    def get_available_actions(self, platform: str) -> ActionsResponse:
+    def get_available_actions(self, platform: str, query: Optional[str] = None, limit: int = 20) -> ActionsResponse:
         """
         Get available actions for a platform.
-        
+
         Args:
             platform: The platform to get actions for.
-            
+            query: Optional search query to filter actions using vector search.
+            limit: Maximum number of results when using search (default: 20).
+
         Returns:
             A response containing the available actions.
         """
         try:
             logger.info(f"Fetching available actions for platform: {platform}")
-            all_actions = self.get_all_available_actions(platform)
+
+            if query:
+                logger.debug(f"Using search with query: {query}")
+                all_actions = self.search_available_actions(platform, query, limit)
+            else:
+                logger.debug("Fetching all available actions")
+                all_actions = self.get_all_available_actions(platform)
             
             # Filter actions by IDs if actions filter is provided
             if self._actions_filter:
@@ -520,7 +623,7 @@ class PicaClient:
                 
                 all_actions = filtered_by_permissions
                 logger.info(f"After filtering by permissions ({self._permissions_filter}), {len(all_actions)} actions remain")
-            
+
             # Create simplified action representations
             simplified_actions = []
             for action in all_actions:

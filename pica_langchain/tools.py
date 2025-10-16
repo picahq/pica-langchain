@@ -21,35 +21,43 @@ class GetAvailableActionsTool(BaseTool):
     client: PicaClient
     
     def _run(
-        self, 
-        platform: str, 
+        self,
+        platform: str,
+        query: Optional[str] = None,
+        limit: int = 20,
         run_manager: Optional[CallbackManagerForToolRun] = None
     ) -> str:
         """
         Run the tool to get available actions.
-        
+
         Args:
             platform: The platform to get actions for.
+            query: Optional search query to filter actions using vector search.
+            limit: Maximum number of results when using search (default: 20).
             run_manager: Callback manager for the tool run.
-            
+
         Returns:
             JSON string with the available actions.
         """
         logger.info(f"Getting available actions for platform: {platform}")
-        response = self.client.get_available_actions(platform)
+        if query:
+            logger.debug(f"Using search query: {query}")
+        response = self.client.get_available_actions(platform, query=query, limit=limit)
         logger.debug(f"Got response with {len(response.actions or [])} actions")
 
         return json.dumps(response.model_dump(), default=str)
     
     async def _arun(
-        self, 
-        platform: str, 
+        self,
+        platform: str,
+        query: Optional[str] = None,
+        limit: int = 20,
         run_manager: Optional[AsyncCallbackManagerForToolRun] = None
     ) -> str:
         """
         Async version of the run method.
         """
-        return self._run(platform=platform)
+        return self._run(platform=platform, query=query, limit=limit)
 
 
 class GetActionKnowledgeTool(BaseTool):
@@ -207,6 +215,8 @@ class ExecuteTool(BaseTool):
 
 class GetAvailableActionsSchema(BaseModel):
     platform: str = Field(description="The platform to get available actions for")
+    query: Optional[str] = Field(None, description="Optional search query to filter actions using vector search. Pass a descriptive intent phrase WITHOUT the platform name. For example, if the platform is 'gmail' and the user's query is 'fetch my 5 latest emails from Gmail', then the query should be 'fetch my 5 latest emails'.")
+    limit: int = Field(20, description="Maximum number of results to return when using search (default: 20)")
 
 class GetActionKnowledgeSchema(BaseModel):
     platform: str = Field(description="The platform the action belongs to")
