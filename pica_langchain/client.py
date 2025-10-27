@@ -783,6 +783,14 @@ class PicaClient:
             logger.debug(f"Getting full action details for ID: {params.action.id}")
             full_action = self.get_single_action(params.action.id)
             
+            # Check if action has "custom" tag and add connectionKey to data if needed
+            if full_action.tags and "custom" in full_action.tags:
+                logger.debug(f"Action has 'custom' tag, adding connectionKey to request body")
+                if params.data is None:
+                    params.data = {}
+                if isinstance(params.data, dict):
+                    params.data["connectionKey"] = params.connection_key
+            
             path = params.action.path
             template_vars = re.findall(r'\{\{([^}]+)\}\}', path)
             path_variables = params.path_variables or {}

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pica-langchain",
-    version="2.1.0",
+    version="2.1.1",
     packages=find_packages(),
     install_requires=[
         "langchain>=0.3.25,<1.0.0",
